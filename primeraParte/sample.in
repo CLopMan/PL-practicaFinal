@@ -4,13 +4,15 @@ int e = 7, f = 7;
 int var, ver, vir, vor, vur;
 main () {
     f = a + b + 117;
+    e = 1 + 2 * 3;
+    printf("a", a < a + b * f);
     printf("a", a && b);
     printf("a", a || b);
     printf("a", a != b);
     printf("a", a == b);
-    printf("a", a > b);
+    printf("a",  a + b * f > b);
     printf("a", a < b);
-    printf("a", a <= b);
+    printf("a", a / b + 1 <= 3 - b / a);
     printf("a", a >= b);
 
     printf ("pepito", f, c + 1);
