@@ -1,0 +1,20 @@
+(setq a 0)  
+(setq b 0) (setq c 4) (setq d 0)  
+(setq e 7) (setq f 7)  
+(setq var 0) (setq ver 0) (setq vir 0) (setq vor 0) (setq vur 0)  
+(defun main () 
+(setq f (+ (+ a b) 117))
+(prin1 (and a b)) 
+(prin1 (or a b)) 
+(prin1 (/= a b)) 
+(prin1 (= a b)) 
+(prin1 (> a b)) 
+(prin1 (< a b)) 
+(prin1 (<= a b)) 
+(prin1 (>= a b)) 
+(prin1 f) (prin1 (+ c 1)) 
+(print "Hola mundo")
+)
+(main);
+
+hola buenas tardes

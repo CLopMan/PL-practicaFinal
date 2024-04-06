@@ -1,0 +1,18 @@
+int a;
+int b, c = 4, d;
+int e = 7, f = 7;
+int var, ver, vir, vor, vur;
+main () {
+    f = a + b + 117;
+    printf("a", a && b);
+    printf("a", a || b);
+    printf("a", a != b);
+    printf("a", a == b);
+    printf("a", a > b);
+    printf("a", a < b);
+    printf("a", a <= b);
+    printf("a", a >= b);
+
+    printf ("pepito", f, c + 1);
+    puts ("Hola mundo");
+}
