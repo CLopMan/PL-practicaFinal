@@ -41,14 +41,14 @@ typedef struct s_attr {
 %token PUTS          // identifica puts
 
 
-%right '='                    // es la ultima operacion que se debe realizar
-%left OR                      //
-%left AND                     // 
-%left EQUAL NOTEQ             // 
-%left '<' LEQ '>' GEQ         // 
-%left '+' '-'                 // menor orden de precedencia
-%left '*' '/'                 // orden de precedencia intermedio
-%left UNARY_SIGN              // mayor orden de precedencia
+%right '='                    // minima preferencia
+%left OR                      // 
+%left AND                     //  
+%left EQUAL NOTEQ             //  
+%left '<' LEQ '>' GEQ         //  
+%left '+' '-'                 // 
+%left '*' '/'                 // 
+%left UNARY_SIGN              // maxima preferencia
 
 %%                            // Seccion 3 Gramatica - Semantico
 
