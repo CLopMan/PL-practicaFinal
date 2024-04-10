@@ -1,0 +1,20 @@
+int a = 10; 
+int b = 23;
+
+
+main () {
+    while (a != 10) {
+        printf("%d", a);
+        a = a + 1;
+    }
+
+    if (b > 20) {
+        b = b + 1;
+        b = b + 1;
+        b = b + 1;
+        printf("%d", b);
+    } else {
+        puts("HOLA");
+    }
+    printf("%d", a);
+}
