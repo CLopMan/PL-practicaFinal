@@ -1,20 +1,21 @@
 int a = 10; 
 int b = 23;
 
+f1 (int a, int b) {
+    int a = 2;
+    printf("a", a + b);
+}
+
+
+
+
 
 main () {
-    while (a != 10) {
-        printf("%d", a);
-        a = a + 1;
-    }
-
-    if (b > 20) {
-        b = b + 1;
-        b = b + 1;
-        b = b + 1;
-        printf("%d", b);
-    } else {
-        puts("HOLA");
-    }
+    int i; // esto no se comprueba 
     printf("%d", a);
+    for (i = 0; i < 10; i = i + 1) {
+        puts("aaaaaaaa");
+    }
 }
+
+//@ (main);

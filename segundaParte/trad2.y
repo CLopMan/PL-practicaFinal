@@ -15,6 +15,7 @@ char *mi_malloc (int) ;
 char *gen_code (char *) ;
 char *int_to_string (int) ;
 char *char_to_string (char) ;
+char *nombre_funcion;
 
 char temp [2048] ;
 
@@ -41,6 +42,7 @@ typedef struct s_attr {
 %token PUTS          // identifica puts
 %token IF
 %token ELSE
+%token FOR
 
 
 %right '='                    // minima preferencia
@@ -49,33 +51,50 @@ typedef struct s_attr {
 %left EQUAL NOTEQ             //  
 %left '<' LEQ '>' GEQ         //  
 %left '+' '-'                 // 
-%left '*' '/'                 // 
+%left '*' '/' '%'             // 
 %left UNARY_SIGN              // maxima preferencia
 
 %%                            // Seccion 3 Gramatica - Semantico
 
-axioma:     declaraciones_gvar /*declaracion_func*/ MAIN '(' ')' '{' codigo '}'      { printf ("%s(defun main () \n%s)\n", $1.code, $6.code); } 
+axioma:     var_globales declaracion_func MAIN {nombre_funcion = gen_code("main");}  '(' ')' '{' var_locales codigo '}'      { printf ("(defun main () \n%s%s)\n", $8.code, $9.code); } 
             ;
 
-/* declaracion_func:   {$$.code = "";}
-                | IDENTIF '(' args ')' '{' codigo '}' {printf("(defun %s (%s)\n%s\n)");}
+declaracion_func:   {$$.code = "";}
+                | IDENTIF '(' args ')' '{' {nombre_funcion = gen_code($1.code);} var_locales codigo '}' {printf("(defun %s (%s)\n%s%s)\n", $1.code, $3.code, $7.code, $8.code);}
                 ;
 
+var_locales: {$$.code = "";}
+            | INTEGER IDENTIF '=' NUMBER rest_declar_local';' var_locales   {sprintf (temp, "(setq %s-%s %d) %s \n%s", nombre_funcion, $2.code, $4.value, $5.code, $7.code) ;   
+                                                                              $$.code = gen_code (temp) ;}
+            | INTEGER IDENTIF rest_declar_local';' var_locales              {sprintf(temp, "(setq %s-%s 0) %s \n%s", nombre_funcion, $2.code, $3.code, $5.code);
+                                                                            $$.code = gen_code(temp);}
+            ;
+
+rest_declar_local:                                              {$$.code = "" ;}
+                | ',' IDENTIF '=' NUMBER rest_declar            {sprintf (temp, "(setq %s-%s %d) %s", nombre_funcion,$2.code, $4.value, $5.code) ; 
+                                                                $$.code = gen_code (temp) ;}
+                | ',' IDENTIF  rest_declar                      {sprintf (temp, "(setq %s-%s 0) %s", nombre_funcion,$2.code, $3.code) ; 
+                                                                $$.code = gen_code (temp) ;}    
+                ; 
+
 args:  {$$.code = "";}
-     | INTEGER IDENTIF rest_args {;}
+     | INTEGER IDENTIF rest_args    {sprintf(temp, "%s %s", $2.code, $3.code);
+                                    $$.code = gen_code (temp) ;}
      ;
 
 rest_args:          {$$.code = "";}
-            | ',' INTEGER IDENTIF rest_args {}
+            | ',' INTEGER IDENTIF rest_args {sprintf(temp, " %s %s", $3.code, $4.code);
+                                            $$.code = gen_code(temp);}
+            ;
 
-*/
-
+var_globales : declaraciones_gvar { printf ("%s", $1.code);}
+            ; 
 
 declaraciones_gvar:                                                              {$$.code = "" ; }
-                | INTEGER IDENTIF '=' NUMBER rest_declar';' declaraciones_gvar   {sprintf (temp, "(setq %s %d) %s \n%s", $2.code, $4.value, $5.code, $7.code) ; 
-                                                                            $$.code = gen_code (temp) ; }
+                | INTEGER IDENTIF '=' NUMBER rest_declar';' declaraciones_gvar   {sprintf (temp, "(setq %s %d) %s \n%s", $2.code, $4.value, $5.code, $7.code) ;   
+                                                                                    $$.code = gen_code (temp) ;}
                 | INTEGER IDENTIF rest_declar';' declaraciones_gvar              {sprintf(temp, "(setq %s 0) %s \n%s", $2.code, $3.code, $5.code);
-                                                                            $$.code = gen_code(temp); }
+                                                                                    $$.code = gen_code(temp);}
                 ;
 
 rest_declar:                                                    {$$.code = "" ;}
@@ -92,8 +111,20 @@ codigo:     sentencia ';' r_expr        { sprintf (temp, "%s\n%s", $1.code, $3.c
                                                             $$.code = gen_code(temp);}
             | IF '(' expresion ')' '{' codigo '}' est_else r_expr {sprintf(temp, "(if %s\n(progn %s)\n%s)\n%s", $3.code, $6.code, $8.code, $9.code);
                                                             $$.code = gen_code(temp);}
-            |
             ;
+            | FOR '(' inicializar ';' expresion ';' IDENTIF '=' incr_decr ')' '{' codigo '}' r_expr {sprintf(temp, "%s(loop while %s do\n%s(setf %s-%s%s)) \n%s", $3.code, $5.code, $12.code,nombre_funcion, $7.code,$9.code, $14.code);
+                                                            $$.code = gen_code(temp);}
+            ;
+
+inicializar: IDENTIF '=' expresion   { sprintf (temp, "(setf %s-%s %s)", nombre_funcion,$1.code, $3.code) ; 
+                                        $$.code = gen_code (temp) ; }
+            ; 
+
+incr_decr:    expresion '+' expresion  { sprintf (temp, "(+ %s %s)", $1.code, $3.code) ;
+                                           $$.code = gen_code (temp) ; }
+            |   expresion '-' expresion  { sprintf (temp, "(- %s %s)", $1.code, $3.code) ;
+                                           $$.code = gen_code (temp) ; }
+
 est_else:           {$$.code = "";}
             | ELSE '{' codigo '}' { sprintf(temp, "(progn %s)\n", $3.code); 
                                     $$.code = gen_code(temp);}
@@ -103,7 +134,7 @@ r_expr:                                  { $$.code = ""; }
             |   codigo                   { ; }
             ;
 
-sentencia:    IDENTIF '=' expresion                 { sprintf (temp, "(setq %s %s)", $1.code, $3.code) ; 
+sentencia:    IDENTIF '=' expresion                 { sprintf (temp, "(setf %s-%s %s)", nombre_funcion,$1.code, $3.code) ; 
                                                     $$.code = gen_code (temp) ; }
             | PRINTF '(' STRING ',' expresion rest_print ')'      { sprintf (temp, "(prin1 %s) %s", $5.code, $6.code) ;  
                                                     $$.code = gen_code (temp) ; }
@@ -123,6 +154,8 @@ expresion:      termino                  { $$ = $1 ; }
             |   expresion '*' expresion  { sprintf (temp, "(* %s %s)", $1.code, $3.code) ;
                                            $$.code = gen_code (temp) ; }
             |   expresion '/' expresion  { sprintf (temp, "(/ %s %s)", $1.code, $3.code) ;
+                                           $$.code = gen_code (temp) ; }
+            |   expresion '%' expresion  { sprintf (temp, "(\% %s %s)", $1.code, $3.code) ;
                                            $$.code = gen_code (temp) ; }
             |   expresion AND expresion  { sprintf (temp, "(and %s %s)", $1.code, $3.code) ;
                                            $$.code = gen_code (temp) ; }
@@ -149,7 +182,7 @@ termino:        operando                           { $$ = $1 ; }
                                                      $$.code = gen_code (temp) ; }    
             ;
 
-operando:       IDENTIF                  { sprintf (temp, "%s", $1.code) ;
+operando:       IDENTIF                  { sprintf (temp, "%s-%s", nombre_funcion,$1.code) ;
                                            $$.code = gen_code (temp) ; }
             |   NUMBER                   { sprintf (temp, "%d", $1.value) ;
                                            $$.code = gen_code (temp) ; }
@@ -222,6 +255,7 @@ t_keyword keywords [] = { // define las palabras reservadas y los
     "while",       WHILE,
     "if",          IF,
     "else",        ELSE,
+    "for",         FOR,
     NULL,          0               // para marcar el fin de la tabla
 } ;
 

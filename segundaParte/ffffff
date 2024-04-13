@@ -1,0 +1,14 @@
+(setq a 10)  
+(setq b 23)  
+(defun f1 (a  b )
+(setq f1-a 2)  
+(prin1 (+ f1-a b)) 
+)
+(defun main () 
+(setq main-i 0)  
+(prin1 a) 
+(setf main-i 0)(loop while (< main-i 10) do
+(print "aaaaaaaa")
+(setf main-i(+ main-i 1))) 
+)
+ (main);
