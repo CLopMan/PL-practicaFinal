@@ -18,6 +18,8 @@ main () {
         puts("aaaaaaaa");
     }
     f1 (2, 3);
+    i = 2 + f1(23,1);
+    f1 (f1);
 }
 
 //@ (main);

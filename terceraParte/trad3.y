@@ -192,6 +192,8 @@ expresion:      termino                     { $$ = $1 ; }
                                             $$.code = gen_code (temp) ; }
             |   expresion '<' expresion     { sprintf (temp, "(< %s %s)", $1.code, $3.code) ;
                                             $$.code = gen_code (temp) ; }
+            | IDENTIF '('expresion rest_params')'                   { sprintf (temp, "(%s %s %s)", $1.code,$3.code, $4.code) ;  
+                                                                    $$.code = gen_code (temp) ; }
             ;
 
 termino:        operando                           { $$ = $1 ; }                          
