@@ -43,6 +43,7 @@ typedef struct s_attr {
 %token IF
 %token ELSE
 %token FOR
+%token RETURN
 
 
 %right '='                    // minima preferencia
@@ -95,6 +96,13 @@ var_locales:                                                                {$$.
                                                                             $$.code = gen_code (temp) ;}
             | INTEGER IDENTIF rest_declar_local';' var_locales              {sprintf(temp, "(setq %s-%s 0) %s \n%s", nombre_funcion, $2.code, $3.code, $5.code);
                                                                             $$.code = gen_code(temp);}
+            | INTEGER IDENTIF '[' NUMBER']' rest_declar_vector ';' var_locales              {sprintf(temp, "(setq %s (make-array %d)) %s \n%s", $2.code, $4.value, $6.code, $8.code);
+                                                                                            $$.code = gen_code(temp);}
+            ;
+
+rest_declar_vector: ',' IDENTIF '[' NUMBER']' rest_declar_vector              {sprintf(temp, "(setq %s (make-array %d)) %s", $2.code, $4.value, $6.code);
+                                                                                            $$.code = gen_code(temp);}
+            |                                                                   {$$.code = "" ;}                                                                     
             ;
 
 rest_declar_local:                                                          {$$.code = "" ;}
@@ -107,7 +115,6 @@ rest_declar_local:                                                          {$$.
 
 codigo:     sentencia ';' r_expr                                                                    { sprintf (temp, "%s\n%s", $1.code, $3.code) ; 
                                                                                                     $$.code = gen_code (temp) ;}
-
             | WHILE '(' expresion ')' '{' codigo '}' r_expr                                         {sprintf(temp, "(loop while %s do\n%s)\n%s", $3.code, $6.code, $8.code);
                                                                                                     $$.code = gen_code(temp);}
             | IF '(' expresion ')' '{' codigo '}' est_else r_expr                                   {sprintf(temp, "(if %s\n(progn %s)\n%s)\n%s", $3.code, $6.code, $8.code, $9.code);
@@ -136,6 +143,10 @@ r_expr:                                  { $$.code = ""; }
 
 sentencia:    IDENTIF '=' expresion                                 { sprintf (temp, "(setf %s-%s %s)", nombre_funcion,$1.code, $3.code) ; 
                                                                     $$.code = gen_code (temp) ; }
+            |vector '=' expresion                                    { sprintf (temp, "(setf %s %s)", $1.code, $3.code) ; 
+                                                                    $$.code = gen_code (temp) ; }
+            | RETURN expresion                                      {sprintf(temp, "(return-from %s %s)", nombre_funcion,$2.code); 
+                                                                    $$.code = gen_code (temp) ;}
             | PRINTF '(' STRING ',' expresion rest_print ')'        { sprintf (temp, "(prin1 %s) %s", $5.code, $6.code) ;  
                                                                     $$.code = gen_code (temp) ; }
             | PUTS '(' STRING ')'                                   { sprintf (temp, "(print \"%s\")", $3.code) ;  
@@ -187,7 +198,12 @@ operando:       IDENTIF                  { sprintf (temp, "%s-%s", nombre_funcio
             |   NUMBER                   { sprintf (temp, "%d", $1.value) ;
                                            $$.code = gen_code (temp) ; }
             |   '(' expresion ')'        { $$ = $2 ; }
+            | vector                     {sprintf (temp, "%s", $1.code) ;
+                                           $$.code = gen_code (temp) ; }
             ;
+
+vector:      IDENTIF '[' NUMBER ']'     {sprintf (temp, "(aref %s %d)", $1.code, $3.value) ;
+                                           $$.code = gen_code (temp) ; }
 
 
 %%                            // SECCION 4    Codigo en C
@@ -256,6 +272,7 @@ t_keyword keywords [] = { // define las palabras reservadas y los
     "if",          IF,
     "else",        ELSE,
     "for",         FOR,
+    "return",       RETURN,
     NULL,          0               // para marcar el fin de la tabla
 } ;
 
