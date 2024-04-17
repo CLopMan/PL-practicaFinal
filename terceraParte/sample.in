@@ -1,5 +1,6 @@
 int a = 10; 
 int b = 23;
+int vecto1 [34];
 
 f1 (int a, int b) {
     int a = 2;
@@ -20,6 +21,7 @@ main () {
     f1 (2, 3);
     i = 2 + f1(23,1);
     f1 (f1);
+    f1 ();
 }
 
 //@ (main);

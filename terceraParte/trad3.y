@@ -68,6 +68,8 @@ declaraciones_gvar:                                                             
                                                                                     $$.code = gen_code (temp) ;}
                 | INTEGER IDENTIF rest_declar';' declaraciones_gvar                 {sprintf(temp, "(setq %s 0) %s \n%s", $2.code, $3.code, $5.code);
                                                                                     $$.code = gen_code(temp);}
+                | INTEGER IDENTIF '[' NUMBER']' rest_declar_vector ';' declaraciones_gvar          {sprintf(temp, "(setq %s (make-array %d)) %s \n%s", $2.code, $4.value, $6.code, $8.code);
+                                                                                            $$.code = gen_code(temp);}
                 ;
 
 rest_declar:                                                                        {$$.code = "" ;}
@@ -153,6 +155,8 @@ sentencia:    IDENTIF '=' expresion                                 { sprintf (t
                                                                     $$.code = gen_code (temp) ; }
             | IDENTIF '('expresion rest_params')'                   { sprintf (temp, "(%s %s %s)", $1.code,$3.code, $4.code) ;  
                                                                     $$.code = gen_code (temp) ; }
+            | IDENTIF '('')'                                        { sprintf (temp, "(%s)", $1.code) ;  
+                                                                    $$.code = gen_code (temp) ; }
             ;
 
 rest_print:                                 { $$.code = "" ; }
@@ -193,7 +197,7 @@ expresion:      termino                     { $$ = $1 ; }
             |   expresion '<' expresion     { sprintf (temp, "(< %s %s)", $1.code, $3.code) ;
                                             $$.code = gen_code (temp) ; }
             | IDENTIF '('expresion rest_params')'                   { sprintf (temp, "(%s %s %s)", $1.code,$3.code, $4.code) ;  
-                                                                    $$.code = gen_code (temp) ; }
+                                                                    $$.code = gen_code (temp) ; } 
             ;
 
 termino:        operando                           { $$ = $1 ; }                          
