@@ -9,6 +9,11 @@
 
 #define FF fflush(stdout);    // para forzar la impresion inmediata
 
+typedef struct s_lista { // lista de variabbles locales
+    char lista[1024][1024];
+    int i; 
+} t_lista;
+
 int yylex () ;
 int yyerror () ;
 char *mi_malloc (int) ;
@@ -16,9 +21,14 @@ char *gen_code (char *) ;
 char *int_to_string (int) ;
 char *char_to_string (char) ;
 char *nombre_funcion;
+int search_local(t_lista l, char *var);
+int insert(t_lista *l, char *var);
+int remove_all(t_lista *l);
+
 
 char temp [2048] ;
 
+t_lista var_list;
 // Definitions for explicit attributes
 
 typedef struct s_attr {
@@ -57,30 +67,30 @@ typedef struct s_attr {
 
 %%                            // Seccion 3 Gramatica - Semantico
 
-axioma:  /*{nombre_funcion = gen_code("");}*/ var_globales declaracion_func MAIN {nombre_funcion = gen_code("main");}  '(' ')' '{' var_locales codigo '}'      { printf ("(defun main () \n%s%s)\n", $8.code, $9.code); } 
+axioma:  {nombre_funcion = gen_code("");} var_globales declaracion_func MAIN {nombre_funcion = gen_code("main");}  '(' ')' '{' declaracion_variables codigo '}'      { printf ("(defun main () \n%s%s)\n", $9.code, $10.code); } 
             ;
 
-var_globales : declaraciones_gvar                                                   { printf ("%s", $1.code);}
+var_globales : declaracion_variables                                                 { printf ("%s", $1.code);}
             ; 
 
-declaraciones_gvar:                                                                 {$$.code = "" ; }
+/*declaraciones_gvar:                                                                 {$$.code = "" ; }
                 | INTEGER IDENTIF '=' NUMBER rest_declar';' declaraciones_gvar      {sprintf (temp, "(setq %s %d) %s \n%s", $2.code, $4.value, $5.code, $7.code) ;   
                                                                                     $$.code = gen_code (temp) ;}
                 | INTEGER IDENTIF rest_declar';' declaraciones_gvar                 {sprintf(temp, "(setq %s 0) %s \n%s", $2.code, $3.code, $5.code);
                                                                                     $$.code = gen_code(temp);}
                 | INTEGER IDENTIF '[' NUMBER']' rest_declar_vector ';' declaraciones_gvar          {sprintf(temp, "(setq %s (make-array %d)) %s \n%s", $2.code, $4.value, $6.code, $8.code);
                                                                                             $$.code = gen_code(temp);}
-                ;
+                ;*/
 
-rest_declar:                                                                        {$$.code = "" ;}
+/*rest_declar:                                                                        {$$.code = "" ;}
                 | ',' IDENTIF '=' NUMBER rest_declar                                {sprintf (temp, "(setq %s %d) %s", $2.code, $4.value, $5.code) ; 
                                                                                     $$.code = gen_code (temp) ;}
                 | ',' IDENTIF  rest_declar                                          {sprintf (temp, "(setq %s 0) %s", $2.code, $3.code) ; 
                                                                                     $$.code = gen_code (temp) ;}    
-                ;  
+                ; */ 
 
 declaracion_func:                                                                                           {$$.code = "";}
-                | IDENTIF '(' args ')' '{' {nombre_funcion = gen_code($1.code);} var_locales codigo '}'     {printf("(defun %s (%s)\n%s%s)\n", $1.code, $3.code, $7.code, $8.code);}
+                | IDENTIF '(' args ')' '{' {nombre_funcion = gen_code($1.code);} declaracion_variables codigo '}'  {printf("(defun %s (%s)\n%s%s)\n", $1.code, $3.code, $7.code, $8.code); remove_all(&var_list);} declaracion_func
                 ;
 
 args:                                                                                                       {$$.code = "";}
@@ -93,25 +103,37 @@ rest_args:                                                                      
                                                                                                             $$.code = gen_code(temp);}
             ;
 
-var_locales:                                                                {$$.code = "";}
-            | INTEGER IDENTIF '=' NUMBER rest_declar_local';' var_locales   {sprintf (temp, "(setq %s-%s %d) %s \n%s", nombre_funcion, $2.code, $4.value, $5.code, $7.code) ;   
-                                                                            $$.code = gen_code (temp) ;}
-            | INTEGER IDENTIF rest_declar_local';' var_locales              {sprintf(temp, "(setq %s-%s 0) %s \n%s", nombre_funcion, $2.code, $3.code, $5.code);
-                                                                            $$.code = gen_code(temp);}
-            | INTEGER IDENTIF '[' NUMBER']' rest_declar_vector ';' var_locales              {sprintf(temp, "(setq %s (make-array %d)) %s \n%s", $2.code, $4.value, $6.code, $8.code);
-                                                                                            $$.code = gen_code(temp);}
+declaracion_variables:                                                                {$$.code = "";}
+            | INTEGER IDENTIF '=' NUMBER rest_declar ';' declaracion_variables      {char aux[1026] = "";
+                                                                                    if (strcmp(nombre_funcion, "")) {sprintf(aux, "%s-", nombre_funcion); insert(&var_list, $2.code);}
+                                                                                    sprintf (temp, "(setq %s%s %d) %s \n%s", aux, $2.code, $4.value, $5.code, $7.code) ;   
+                                                                                    $$.code = gen_code (temp) ;}
+            | INTEGER IDENTIF rest_declar';' declaracion_variables                  {char aux[1026] = "";
+                                                                                    if (strcmp(nombre_funcion, "")) {sprintf(aux, "%s-", nombre_funcion); insert(&var_list, $2.code);}
+                                                                                    sprintf(temp, "(setq %s%s 0) %s \n%s", aux, $2.code, $3.code, $5.code);
+                                                                                    $$.code = gen_code(temp);}
+            | INTEGER IDENTIF '[' NUMBER']' rest_declar_vector ';' declaracion_variables                {char aux[1026] = "";
+                                                                                                        if (strcmp(nombre_funcion, "")) {sprintf(aux, "%s-", nombre_funcion); insert(&var_list, $2.code);}
+                                                                                                        sprintf(temp, "(setq %s%s (make-array %d)) %s \n%s",aux, $2.code, $4.value, $6.code, $8.code);
+                                                                                                        $$.code = gen_code(temp);}
             ;
 
-rest_declar_vector: ',' IDENTIF '[' NUMBER']' rest_declar_vector              {sprintf(temp, "(setq %s (make-array %d)) %s", $2.code, $4.value, $6.code);
-                                                                                            $$.code = gen_code(temp);}
+rest_declar_vector: ',' IDENTIF '[' NUMBER']' rest_declar_vector                {char aux[1026] = "";
+                                                                                if (strcmp(nombre_funcion, "")) {sprintf(aux, "%s-", nombre_funcion); insert(&var_list, $2.code);}
+                                                                                sprintf(temp, "(setq %s%s (make-array %d)) %s",aux, $2.code, $4.value, $6.code);
+                                                                                $$.code = gen_code(temp);}
             |                                                                   {$$.code = "" ;}                                                                     
             ;
 
-rest_declar_local:                                                          {$$.code = "" ;}
-                | ',' IDENTIF '=' NUMBER rest_declar_local                  {sprintf (temp, "(setq %s-%s %d) %s", nombre_funcion,$2.code, $4.value, $5.code) ; 
-                                                                            $$.code = gen_code (temp) ;}
-                | ',' IDENTIF  rest_declar_local                            {sprintf (temp, "(setq %s-%s 0) %s", nombre_funcion,$2.code, $3.code) ; 
-                                                                            $$.code = gen_code (temp) ;}    
+rest_declar:                                                          {$$.code = "" ;}
+                | ',' IDENTIF '=' NUMBER rest_declar                  {char aux[1026] = "";
+                                                                        if (strcmp(nombre_funcion, "")) {sprintf(aux, "%s-", nombre_funcion); insert(&var_list, $2.code);}
+                                                                        sprintf (temp, "(setq %s%s %d) %s", aux,$2.code, $4.value, $5.code) ; 
+                                                                        $$.code = gen_code (temp) ;}
+                | ',' IDENTIF  rest_declar                            {char aux[1026] = "";
+                                                                        if (strcmp(nombre_funcion, "")) {sprintf(aux, "%s-", nombre_funcion); insert(&var_list, $2.code);}
+                                                                        sprintf (temp, "(setq %s%s 0) %s", aux,$2.code, $3.code) ; 
+                                                                        $$.code = gen_code (temp) ;}    
                 ; 
 
 
@@ -121,11 +143,15 @@ codigo:     sentencia ';' r_expr                                                
                                                                                                     $$.code = gen_code(temp);}
             | IF '(' expresion ')' '{' codigo '}' est_else r_expr                                   {sprintf(temp, "(if %s\n(progn %s)\n%s)\n%s", $3.code, $6.code, $8.code, $9.code);
                                                                                                     $$.code = gen_code(temp);}
-            | FOR '(' inicializar ';' expresion ';' IDENTIF '=' incr_decr ')' '{' codigo '}' r_expr {sprintf(temp, "%s(loop while %s do\n%s(setf %s-%s%s)) \n%s", $3.code, $5.code, $12.code,nombre_funcion, $7.code,$9.code, $14.code);
+            | FOR '(' inicializar ';' expresion ';' IDENTIF '=' incr_decr ')' '{' codigo '}' r_expr {char aux[1026] = "";
+                                                                                                    if (search_local(var_list, $7.code)) {sprintf(aux, "%s-", nombre_funcion);}
+                                                                                                    sprintf(temp, "%s(loop while %s do\n%s(setf %s%s%s)) \n%s", $3.code, $5.code, $12.code, aux, $7.code,$9.code, $14.code);
                                                                                                     $$.code = gen_code(temp);}
             ;
 
-inicializar: IDENTIF '=' expresion                          { sprintf (temp, "(setf %s-%s %s)", nombre_funcion,$1.code, $3.code) ; 
+inicializar: IDENTIF '=' expresion                          {char aux[1026] = "";
+                                                            if (search_local(var_list, $1.code)) {sprintf(aux, "%s-", nombre_funcion);}
+                                                            sprintf (temp, "(setf %s%s %s)", aux,$1.code, $3.code) ; 
                                                             $$.code = gen_code (temp) ; }
             ; 
 
@@ -143,13 +169,19 @@ r_expr:                                  { $$.code = ""; }
             |   codigo                   { ; }
             ;
 
-sentencia:    IDENTIF '=' expresion                                 { sprintf (temp, "(setf %s-%s %s)", nombre_funcion,$1.code, $3.code) ; 
+sentencia:    IDENTIF '=' expresion                                 {char aux[1026] = "";
+                                                                    if (search_local(var_list, $1.code)) {sprintf(aux, "%s-", nombre_funcion);}
+                                                                    sprintf (temp, "(setf %s%s %s)", aux,$1.code, $3.code) ; 
                                                                     $$.code = gen_code (temp) ; }
-            |vector '=' expresion                                    { sprintf (temp, "(setf %s %s)", $1.code, $3.code) ; 
+            |vector '=' expresion                                    { char aux[1026] = "";
+                                                                    if (search_local(var_list, $1.code)) {sprintf(aux, "%s-", nombre_funcion);}
+                                                                    sprintf (temp, "(setf %s%s %s)",aux, $1.code, $3.code) ; 
                                                                     $$.code = gen_code (temp) ; }
             | RETURN expresion                                      {sprintf(temp, "(return-from %s %s)", nombre_funcion,$2.code); 
                                                                     $$.code = gen_code (temp) ;}
             | PRINTF '(' STRING ',' expresion rest_print ')'        { sprintf (temp, "(prin1 %s) %s", $5.code, $6.code) ;  
+                                                                    $$.code = gen_code (temp) ; }
+            | PRINTF '(' STRING ',' STRING rest_print ')'        { sprintf (temp, "(prin1 \"%s\") %s", $5.code, $6.code) ;  
                                                                     $$.code = gen_code (temp) ; }
             | PUTS '(' STRING ')'                                   { sprintf (temp, "(print \"%s\")", $3.code) ;  
                                                                     $$.code = gen_code (temp) ; }
@@ -161,6 +193,8 @@ sentencia:    IDENTIF '=' expresion                                 { sprintf (t
 
 rest_print:                                 { $$.code = "" ; }
             | ',' expresion rest_print      { sprintf(temp, "(prin1 %s) %s", $2.code, $3.code); 
+                                            $$.code = gen_code(temp); }
+            | ',' STRING rest_print      { sprintf(temp, "(prin1 \"%s\") %s", $2.code, $3.code); 
                                             $$.code = gen_code(temp); }
             ;
 
@@ -198,6 +232,8 @@ expresion:      termino                     { $$ = $1 ; }
                                             $$.code = gen_code (temp) ; }
             | IDENTIF '('expresion rest_params')'                   { sprintf (temp, "(%s %s %s)", $1.code,$3.code, $4.code) ;  
                                                                     $$.code = gen_code (temp) ; } 
+            | IDENTIF '('')'                   { sprintf (temp, "(%s)", $1.code) ;  
+                                                $$.code = gen_code (temp) ; } 
             ;
 
 termino:        operando                           { $$ = $1 ; }                          
@@ -207,17 +243,26 @@ termino:        operando                           { $$ = $1 ; }
                                                      $$.code = gen_code (temp) ; }    
             ;
 
-operando:       IDENTIF                  { sprintf (temp, "%s-%s", nombre_funcion,$1.code) ;
-                                           $$.code = gen_code (temp) ; }
-            |   NUMBER                   { sprintf (temp, "%d", $1.value) ;
-                                           $$.code = gen_code (temp) ; }
-            |   '(' expresion ')'        { $$ = $2 ; }
-            | vector                     {sprintf (temp, "%s", $1.code) ;
-                                           $$.code = gen_code (temp) ; }
+operando:       IDENTIF                 { char aux[1026] = "";
+                                        if (search_local(var_list, $1.code)) {sprintf(aux, "%s-", nombre_funcion);}
+                                        sprintf (temp, "%s%s", aux,$1.code) ;
+                                        $$.code = gen_code (temp) ; }
+            |   NUMBER                  { sprintf (temp, "%d", $1.value) ;
+                                        $$.code = gen_code (temp) ; }
+            |   '(' expresion ')'       { $$ = $2 ; }
+            | vector                    {sprintf (temp, "%s", $1.code) ;
+                                        $$.code = gen_code (temp) ; }
             ;
 
-vector:      IDENTIF '[' NUMBER ']'     {sprintf (temp, "(aref %s %d)", $1.code, $3.value) ;
-                                           $$.code = gen_code (temp) ; }
+vector:      IDENTIF '[' expresion ']'     {
+                                            char aux[1026] = "";
+                                            if (search_local(var_list, $1.code))
+                                                {
+                                                    sprintf(aux, "%s-", nombre_funcion);
+                                                }
+                                            sprintf (temp, "(aref %s%s %s)", aux, $1.code, $3.code) ;
+                                            $$.code = gen_code (temp) ;
+                                        }
 
 
 %%                            // SECCION 4    Codigo en C
@@ -260,7 +305,39 @@ char *my_malloc (int nbytes)       // reserva n bytes de memoria dinamica
 
     return p ;
 }
+/**
+* Busca una variable en la lista de locales. 
+*
+*/
+int search_local(t_lista l, char *var) {
+    for (int i = 0; i < l.i; ++i) {
+        if (strcmp(l.lista[i], var) == 0) { // se encuentra la variable
+            return 1;
+        }
 
+    }
+    return 0;
+}
+
+/**
+* inserta una variable local en la lista
+*
+*/
+int insert(t_lista *l, char *var) {
+    strcpy(&(l->lista[l->i][0]), var);
+
+    ++(l->i);
+    return l->i;
+}
+
+/**
+* vacía la lista de variables locales
+*
+*/
+int remove_all(t_lista *l) {
+    l->i = 0; 
+    return 0;
+}
 
 /***************************************************************************/
 /********************** Seccion de Palabras Reservadas *********************/
@@ -437,5 +514,6 @@ int yylex ()
 
 int main ()
 {
+    var_list.i = 0;
     yyparse () ;
 }
