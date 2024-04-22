@@ -105,21 +105,21 @@ rest_args:                                                                      
 
 declaracion_variables:                                                                {$$.code = "";}
             | INTEGER IDENTIF '=' NUMBER rest_declar ';' declaracion_variables      {char aux[1026] = "";
-                                                                                    if (strcmp(nombre_funcion, "")) {sprintf(aux, "%s-", nombre_funcion); insert(&var_list, $2.code);}
+                                                                                    if (strcmp(nombre_funcion, "")) {sprintf(aux, "%s_", nombre_funcion); insert(&var_list, $2.code);}
                                                                                     sprintf (temp, "(setq %s%s %d) %s \n%s", aux, $2.code, $4.value, $5.code, $7.code) ;   
                                                                                     $$.code = gen_code (temp) ;}
             | INTEGER IDENTIF rest_declar';' declaracion_variables                  {char aux[1026] = "";
-                                                                                    if (strcmp(nombre_funcion, "")) {sprintf(aux, "%s-", nombre_funcion); insert(&var_list, $2.code);}
+                                                                                    if (strcmp(nombre_funcion, "")) {sprintf(aux, "%s_", nombre_funcion); insert(&var_list, $2.code);}
                                                                                     sprintf(temp, "(setq %s%s 0) %s \n%s", aux, $2.code, $3.code, $5.code);
                                                                                     $$.code = gen_code(temp);}
             | INTEGER IDENTIF '[' NUMBER']' rest_declar_vector ';' declaracion_variables                {char aux[1026] = "";
-                                                                                                        if (strcmp(nombre_funcion, "")) {sprintf(aux, "%s-", nombre_funcion); insert(&var_list, $2.code);}
+                                                                                                        if (strcmp(nombre_funcion, "")) {sprintf(aux, "%s_", nombre_funcion); insert(&var_list, $2.code);}
                                                                                                         sprintf(temp, "(setq %s%s (make-array %d)) %s \n%s",aux, $2.code, $4.value, $6.code, $8.code);
                                                                                                         $$.code = gen_code(temp);}
             ;
 
 rest_declar_vector: ',' IDENTIF '[' NUMBER']' rest_declar_vector                {char aux[1026] = "";
-                                                                                if (strcmp(nombre_funcion, "")) {sprintf(aux, "%s-", nombre_funcion); insert(&var_list, $2.code);}
+                                                                                if (strcmp(nombre_funcion, "")) {sprintf(aux, "%s_", nombre_funcion); insert(&var_list, $2.code);}
                                                                                 sprintf(temp, "(setq %s%s (make-array %d)) %s",aux, $2.code, $4.value, $6.code);
                                                                                 $$.code = gen_code(temp);}
             |                                                                   {$$.code = "" ;}                                                                     
@@ -127,11 +127,11 @@ rest_declar_vector: ',' IDENTIF '[' NUMBER']' rest_declar_vector                
 
 rest_declar:                                                          {$$.code = "" ;}
                 | ',' IDENTIF '=' NUMBER rest_declar                  {char aux[1026] = "";
-                                                                        if (strcmp(nombre_funcion, "")) {sprintf(aux, "%s-", nombre_funcion); insert(&var_list, $2.code);}
+                                                                        if (strcmp(nombre_funcion, "")) {sprintf(aux, "%s_", nombre_funcion); insert(&var_list, $2.code);}
                                                                         sprintf (temp, "(setq %s%s %d) %s", aux,$2.code, $4.value, $5.code) ; 
                                                                         $$.code = gen_code (temp) ;}
                 | ',' IDENTIF  rest_declar                            {char aux[1026] = "";
-                                                                        if (strcmp(nombre_funcion, "")) {sprintf(aux, "%s-", nombre_funcion); insert(&var_list, $2.code);}
+                                                                        if (strcmp(nombre_funcion, "")) {sprintf(aux, "%s_", nombre_funcion); insert(&var_list, $2.code);}
                                                                         sprintf (temp, "(setq %s%s 0) %s", aux,$2.code, $3.code) ; 
                                                                         $$.code = gen_code (temp) ;}    
                 ; 
@@ -144,13 +144,13 @@ codigo:     sentencia ';' r_expr                                                
             | IF '(' expresion ')' '{' codigo '}' est_else r_expr                                   {sprintf(temp, "(if %s\n(progn %s)\n%s)\n%s", $3.code, $6.code, $8.code, $9.code);
                                                                                                     $$.code = gen_code(temp);}
             | FOR '(' inicializar ';' expresion ';' IDENTIF '=' incr_decr ')' '{' codigo '}' r_expr {char aux[1026] = "";
-                                                                                                    if (search_local(var_list, $7.code)) {sprintf(aux, "%s-", nombre_funcion);}
+                                                                                                    if (search_local(var_list, $7.code)) {sprintf(aux, "%s_", nombre_funcion);}
                                                                                                     sprintf(temp, "%s(loop while %s do\n%s(setf %s%s%s)) \n%s", $3.code, $5.code, $12.code, aux, $7.code,$9.code, $14.code);
                                                                                                     $$.code = gen_code(temp);}
             ;
 
 inicializar: IDENTIF '=' expresion                          {char aux[1026] = "";
-                                                            if (search_local(var_list, $1.code)) {sprintf(aux, "%s-", nombre_funcion);}
+                                                            if (search_local(var_list, $1.code)) {sprintf(aux, "%s_", nombre_funcion);}
                                                             sprintf (temp, "(setf %s%s %s)", aux,$1.code, $3.code) ; 
                                                             $$.code = gen_code (temp) ; }
             ; 
@@ -170,11 +170,11 @@ r_expr:                                  { $$.code = ""; }
             ;
 
 sentencia:    IDENTIF '=' expresion                                 {char aux[1026] = "";
-                                                                    if (search_local(var_list, $1.code)) {sprintf(aux, "%s-", nombre_funcion);}
+                                                                    if (search_local(var_list, $1.code)) {sprintf(aux, "%s_", nombre_funcion);}
                                                                     sprintf (temp, "(setf %s%s %s)", aux,$1.code, $3.code) ; 
                                                                     $$.code = gen_code (temp) ; }
             |vector '=' expresion                                    { char aux[1026] = "";
-                                                                    if (search_local(var_list, $1.code)) {sprintf(aux, "%s-", nombre_funcion);}
+                                                                    if (search_local(var_list, $1.code)) {sprintf(aux, "%s_", nombre_funcion);}
                                                                     sprintf (temp, "(setf %s%s %s)",aux, $1.code, $3.code) ; 
                                                                     $$.code = gen_code (temp) ; }
             | RETURN expresion                                      {sprintf(temp, "(return-from %s %s)", nombre_funcion,$2.code); 
@@ -244,7 +244,7 @@ termino:        operando                           { $$ = $1 ; }
             ;
 
 operando:       IDENTIF                 { char aux[1026] = "";
-                                        if (search_local(var_list, $1.code)) {sprintf(aux, "%s-", nombre_funcion);}
+                                        if (search_local(var_list, $1.code)) {sprintf(aux, "%s_", nombre_funcion);}
                                         sprintf (temp, "%s%s", aux,$1.code) ;
                                         $$.code = gen_code (temp) ; }
             |   NUMBER                  { sprintf (temp, "%d", $1.value) ;
@@ -258,7 +258,7 @@ vector:      IDENTIF '[' expresion ']'     {
                                             char aux[1026] = "";
                                             if (search_local(var_list, $1.code))
                                                 {
-                                                    sprintf(aux, "%s-", nombre_funcion);
+                                                    sprintf(aux, "%s_", nombre_funcion);
                                                 }
                                             sprintf (temp, "(aref %s%s %s)", aux, $1.code, $3.code) ;
                                             $$.code = gen_code (temp) ;
