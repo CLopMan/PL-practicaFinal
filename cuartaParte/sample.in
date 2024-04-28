@@ -1,0 +1,43 @@
+int abc  = 1;
+int b = 0;
+int n = 0;
+
+fib (int n) {
+    int abc = 1;
+    int i = 0;
+    int c;
+    b = 1; 
+    //@ (print abc);
+    for (i = 0; i < n; i = 1 + i) {
+        c = b + abc;
+        abc = b; 
+        b = c; 
+    }
+    return c;
+}
+
+main() {
+    int v[32];
+    int paco = 1;
+    
+    v[31] = fib(10);
+
+    if (3 > 1) {
+        puts("TRUE");
+    } 
+
+    if (! (1 < 0)) {
+        b = 1;
+    } else {
+        puts("FALSE");
+    }
+    
+    while (paco < 10) {
+        paco = paco * 2;
+    }
+    puts("FINNNNN");
+    puts("---");
+    printf("HOLA", v[31]);
+    return 0;
+}
+//@ (main);

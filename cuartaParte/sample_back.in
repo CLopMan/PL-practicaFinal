@@ -1,0 +1,45 @@
+(setq a 0)(setq b 0)
+(defun f1 ()
+    (prin1 "Hola Mundo") (prin1 "Adios Mundo")
+    (setf a 69)
+    (prin1 1)(prin1 a)
+    (if (= a 69)
+        (progn (prin1 (+ 1 2)))
+        (progn (print "False"))
+    )
+    (if (> a 89) 
+        (progn (print "TRUE"))
+        (progn (print "False"))
+    )
+    (loop while (< b 10) do
+        (setf b (+ 2 b))
+        (setf a (- 2 b))
+        (setf a (* 2 b))
+        (setf a (/ 2 b))
+
+    )
+
+)
+(f1)
+(setf a 78)
+(print "HOLAMUNDO")
+(prin1 b)
+
+
+
+EXPLICAZAO
+
+(defun nombre (a b)
+    declaraciones 
+    
+    codigo 
+
+) => 
+
+variable nombre-local_a
+variable nombre-local_b 
+: nombre 
+    nombre-local_b !
+    nombre-local_a !
+
+    codigo 
