@@ -9,6 +9,13 @@
 
 #define FF fflush(stdout);    // para forzar la impresion inmediata
 
+typedef struct s_lista { // tabla de símbolos
+    char lista[1024][1024];
+    int values[1024];
+    int i; 
+} t_lista;
+
+
 int yylex () ;
 int yyerror () ;
 char *mi_malloc (int) ;
@@ -16,7 +23,16 @@ char *gen_code (char *) ;
 char *int_to_string (int) ;
 char *char_to_string (char) ;
 
+// mi tabla de simbolos
+int search_local(t_lista l, char *var);
+int insert(t_lista *l, char *var, int n);
+int remove_all(t_lista *l);
+
 char temp [2048] ;
+char nombre_funcion[1024];
+
+t_lista argumentos; 
+t_lista var_local;
 
 // Definitions for explicit attributes
 
@@ -45,6 +61,9 @@ typedef struct s_attr {
 %token LOOP
 %token IF
 %token PROGN
+%token NOT
+%token RETURN
+%token FROM
 
 
 %right '='                    // minima preferencia
@@ -69,8 +88,31 @@ codigo:     '(' bloque ')' codigo { sprintf(temp, "%s\n%s", $2.code, $4.code);
 bloque:     sentencia    { $$ = $1 ; }
             | declaracion  { sprintf(temp, "%s", $1.code); 
                             $$.code = gen_code(temp); }
-            | DEFUN IDENTIF '(' ')'  codigo    { sprintf(temp, ": %s\n%s;", $2.code, $5.code); 
-                                                        $$.code = gen_code(temp); }
+            | DEFUN IDENTIF {strcpy(nombre_funcion, $2.code); } '(' func_arg ')'   codigo    {   
+                                                                                                char asign_args[2048];
+                                                                                                strcpy(asign_args, "");
+                                                                                                int i; 
+                                                                                                for (i = 0; i < argumentos.i ; ++i) {
+                                                                                                    sprintf(asign_args, "%sarg_%s_%s !\n", asign_args,nombre_funcion, argumentos.lista[i]);
+                                                                                                } // asignacion de argumentos
+
+                                                                                                char variables_locales[2048];
+                                                                                                strcpy(variables_locales, "");
+                                                                                                for (i = 0; i < var_local.i ; ++i) {
+                                                                                                    sprintf(variables_locales, "%svariable %s\n",variables_locales, var_local.lista[i]);
+                                                                                                } // declaracion de var_locales
+
+                                                                                                char asign_local[2048];
+                                                                                                strcpy(asign_local, "");
+                                                                                                for (i = 0; i < var_local.i ; ++i) {
+                                                                                                    sprintf(asign_local, "%s%s !\n", asign_local, var_local.lista[i]);
+                                                                                                } // asignacion de argumentos
+
+                                                                                                sprintf(temp, "%s%s: %s%s%s%s;", $5.code, variables_locales, $2.code, asign_args, asign_local, $7.code); 
+                                                                                                $$.code = gen_code(temp); strcpy(nombre_funcion, "");
+                                                                                                remove_all(&argumentos);
+                                                                                                remove_all(&var_local);
+                                                                                            }
             | LOOP WHILE expresion DO codigo    { sprintf(temp, "BEGIN %s WHILE %s REPEAT", $3.code, $5.code); 
                                                     $$.code = gen_code(temp);} 
             | IF expresion '(' PROGN codigo')' else        { sprintf(temp, "%s IF %s %s THEN", $2.code, $5.code, $7.code); 
@@ -78,34 +120,56 @@ bloque:     sentencia    { $$ = $1 ; }
 
             ;
 
+func_arg:    /* lambda */    {$$.code = "";}
+            | IDENTIF func_arg      { 
+                                        sprintf(temp, "variable arg_%s_%s\n%s", nombre_funcion, $1.code, $2.code);
+                                        $$.code = gen_code(temp);
+                                        insert(&argumentos, $1.code, 0); // insertar en argumentos
+                                    }
+            ;
+
 else:    /* lambda */  { $$.code = ""; }
         | '(' PROGN codigo')' { sprintf(temp, "ELSE %s", $3.code); 
                                 $$.code = gen_code(temp);}
         ;
 
-sentencia:    SETF IDENTIF expresion                         {sprintf (temp, "%s %s !", $3.code, $2.code) ; 
+sentencia:    SETF IDENTIF expresion                         { char aux[1026] = "";
+                                                                if (strcmp(nombre_funcion, "")) {
+                                                                    if (search_local(var_local, $2.code)) {;}
+                                                                    if (search_local(argumentos, $2.code)) {sprintf(aux, "arg_%s_", nombre_funcion);}}
+                                                                    sprintf (temp, "%s %s%s !", $3.code, aux,$2.code) ; 
                                                                     $$.code = gen_code (temp) ; }
-            | PRINT STRING                                       {sprintf(temp, ".\" %s\"", $2.code); 
+            | PRINT STRING                                   {sprintf(temp, ".\" %s\"", $2.code); 
                                                                     $$.code = gen_code(temp); }
-            | IDENTIF                                              {sprintf(temp, "%s", $1.code);
+            | IDENTIF                                        {sprintf(temp, "%s", $1.code);
                                                                     $$.code = gen_code(temp);}
-            | PRIN1 prin1_arg                                          {sprintf(temp, "%s", $2.code); 
+            | PRIN1 prin1_arg                                {sprintf(temp, "%s", $2.code); 
                                                                     $$.code = gen_code(temp); }
+            | RETURN '-' FROM IDENTIF expresion             {
+                                                                sprintf(temp, "%s\n exit", $5.code);
+                                                                $$.code = gen_code(temp);
+                                                            }
             ;
 
         
-prin1_arg:   expresion                           {sprintf(temp, "%s .", $1.code); 
-                                            $$.code = gen_code(temp); }
-        | STRING                            {sprintf(temp, ".\" %s\"", $1.code); 
-                                            $$.code = gen_code(temp); }
-        ;
+prin1_arg:    expresion                      {sprintf(temp, "%s .", $1.code); 
+                                                $$.code = gen_code(temp); }
+            | STRING                            {sprintf(temp, ".\" %s\"", $1.code); 
+                                                $$.code = gen_code(temp); }
+            ;
 
 expresion:    NUMBER   { sprintf (temp, "%d", $1.value) ;
-                        $$.code = gen_code(temp); }
-            | IDENTIF   {sprintf(temp, "%s @", $1.code);
+                            $$.code = gen_code(temp); }
+            | IDENTIF   { char aux[1026] = "";
+                        if (strcmp(nombre_funcion, "")) {
+                            if (search_local(var_local, $1.code)) {;}
+                            else if (search_local(argumentos, $1.code)) {sprintf(aux, "arg_%s_", nombre_funcion);}}
+                            sprintf (temp, "%s%s @", aux,$1.code) ; 
                         $$.code = gen_code(temp); }
             | '(' operacion ')' {sprintf(temp, "%s", $2.code); 
                                 $$.code = gen_code(temp); }
+            | '(' NOT expresion ')' {sprintf(temp, "%s 0=", $3.code);
+                                    $$.code = gen_code(temp);}
             ;
 
 operacion:    '+' expresion expresion { sprintf(temp, "%s %s +", $2.code, $3.code); 
@@ -122,13 +186,33 @@ operacion:    '+' expresion expresion { sprintf(temp, "%s %s +", $2.code, $3.cod
                                         $$.code = gen_code(temp); }
             | '=' expresion expresion { sprintf(temp, "%s %s =", $2.code, $3.code);
                                         $$.code = gen_code(temp); }
+            | AND expresion expresion { sprintf(temp, "%s %s and", $2.code, $3.code); 
+                                        $$.code = gen_code(temp);}
+            | OR expresion expresion  { sprintf(temp, "%s %s or", $2.code, $3.code); 
+                                        $$.code = gen_code(temp);}
+            | GEQ expresion expresion { sprintf(temp, "%s %s >=", $2.code, $3.code); 
+                                        $$.code = gen_code(temp);}
+            | LEQ expresion expresion { sprintf(temp, "%s %s <=", $2.code, $3.code); 
+                                        $$.code = gen_code(temp);}
+            | NOTEQ expresion expresion { sprintf(temp, "%s %s = 0=", $2.code, $3.code); 
+                                        $$.code = gen_code(temp);}
+            | expresion                 {sprintf(temp, "%s", $1.code);
+                                        $$.code = gen_code(temp);} // para poder reconocer expresion como (1)
             ;
 
-declaracion:    SETQ IDENTIF NUMBER                                     {sprintf (temp, "variable %s\n%d %s !", $2.code, $3.value, $2.code) ; 
-                                                                           $$.code = gen_code (temp) ; }
+declaracion:    SETQ IDENTIF NUMBER                                     {
+                                                                            if (strcmp(nombre_funcion, "")) { 
+                                                                                insert(&var_local, $2.code, $3.value);
+                                                                                $$.code = gen_code ("");
+                                                                            } else {
+                                                                                    sprintf (temp, "variable %s\n%d %s !", $2.code, $3.value, $2.code) ; 
+                                                                                    $$.code = gen_code (temp) ; 
+                                                                            }
+                                                                        }
                 ;
 
-/*vector: SETQ IDENTIF '(' MAKE-ARRAY NUMBER')' */
+/*vector: SETQ IDENTIF '(' MAKE-ARRAY NUMBER')' {sprintf (temp, "variable %s\n%d %s !", $2.code, $3.value, $2.code) ; 
+                                                                           $$.code = gen_code (temp) ; }*/
 
 %%                            // SECCION 4    Codigo en C
 
@@ -171,6 +255,45 @@ char *my_malloc (int nbytes)       // reserva n bytes de memoria dinamica
     return p ;
 }
 
+/***************************************************************************/
+/**********************  Seccion de tabla de símbolos  *********************/
+/***************************************************************************/
+
+/**
+* Busca un nombre en la tabla
+*
+*/
+int search_local(t_lista l, char *var) {
+    for (int i = 0; i < l.i; ++i) {
+        if (strcmp(l.lista[i], var) == 0) { // se encuentra la variable
+            return 1;
+        }
+
+    }
+    return 0;
+}
+
+/**
+* inserta un nombre en la lista
+*
+*/
+int insert(t_lista *l, char *var, int n) {
+    strcpy(&(l->lista[l->i][0]), var);
+    l->values[l->i] = n;
+
+    ++(l->i);
+    return l->i;
+}
+
+/**
+* vacia la lista
+*/
+int remove_all(t_lista *l) {
+    l->i = 0; 
+    return 0;
+}
+
+
 
 /***************************************************************************/
 /********************** Seccion de Palabras Reservadas *********************/
@@ -183,13 +306,14 @@ typedef struct s_keyword { // para las palabras reservadas de C
 
 t_keyword keywords [] = { // define las palabras reservadas y los
     "main",        MAIN,           // y los token asociados
-    "print",      PRINT,
-    "and",          AND,
+    "print",       PRINT,
+    "and",         AND,
     "or",          OR,
     "/=",          NOTEQ,
     "<=",          LEQ,
     ">=",          GEQ,
     "setq",        SETQ,
+    "not",         NOT,
     "defun",       DEFUN,
     "prin1",       PRIN1,
     "setf",        SETF,
@@ -198,6 +322,8 @@ t_keyword keywords [] = { // define las palabras reservadas y los
     "while",       WHILE,
     "if",          IF,
     "progn",       PROGN,
+    "return",      RETURN,
+    "from",        FROM,
     NULL,          0               // para marcar el fin de la tabla
 } ;
 
@@ -249,7 +375,6 @@ int yylex ()
 
     do {
         c = getchar () ;
-
         if (c == '#') {	// Ignora las lineas que empiezan por #  (#define, #include)
             do {		//	OJO que puede funcionar mal si una linea contiene #
                 c = getchar () ;
@@ -351,34 +476,3 @@ int main ()
     yyparse () ;
 }
 
-
-
-/*
-(defun f1 (a b)
-    (print a)
-    (setf b (* 2 b))
-    (setf a (+ b a))
-    (return-from f1 a)
-)
-
-variable f1-param_a 
-
-f1 ( a b )
-
-variable f1-param_a
-variable b 
-: f1 ( a b )
-
-b !
-a !
-  +; 
-
-
- 
-4
-5
-: f1 ....
-
-destroy f1... 
-;
-*/

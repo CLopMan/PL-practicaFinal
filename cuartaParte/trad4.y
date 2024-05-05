@@ -157,7 +157,7 @@ sentencia:    IDENTIF '=' expresion                                 {char aux[10
                                                                     if (search_local(var_list, $1.code)) {sprintf(aux, "%s_", nombre_funcion);}
                                                                     sprintf (temp, "(setf %s%s %s)", aux,$1.code, $3.code) ; 
                                                                     $$.code = gen_code (temp) ; }
-            |vector '=' expresion                                    { char aux[1026] = "";
+            | vector '=' expresion                                    { char aux[1026] = "";
                                                                     if (search_local(var_list, $1.code)) {sprintf(aux, "%s_", nombre_funcion);}
                                                                     sprintf (temp, "(setf %s%s %s)",aux, $1.code, $3.code) ; 
                                                                     $$.code = gen_code (temp) ; }

@@ -1,0 +1,4 @@
+(defun fun ( n )
+    (print "FUNCION QUE SUMA 1")
+    (return-from fun ( + 1 n))
+)

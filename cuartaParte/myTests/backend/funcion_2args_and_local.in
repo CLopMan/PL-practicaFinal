@@ -1,0 +1,6 @@
+(defun f1 ( a b )
+    (setq a 0)
+    (setq c 0)
+    (setf c (+ a b))
+    (return-from f1 c)
+)

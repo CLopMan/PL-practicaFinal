@@ -1,0 +1,8 @@
+(setq a 0)
+(setq b 0)
+(prin1 (and a b))
+(prin1 (or a b))
+(prin1 (>= a b))
+(prin1 (<= a b))
+(prin1 (/= a b))
+(prin1 (not (/= a b)))

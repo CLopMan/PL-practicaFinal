@@ -38,6 +38,13 @@ main() {
     puts("FINNNNN");
     puts("---");
     printf("HOLA", v[31]);
+    if (! (1 < 0)) {
+        b = 1;
+    } else {
+        puts("FALSE");
+    }
     return 0;
+
+
 }
 //@ (main);
