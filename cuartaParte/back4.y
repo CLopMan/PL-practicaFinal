@@ -72,7 +72,7 @@ typedef struct s_attr {
 %left EQUAL NOTEQ             //  
 %left '<' LEQ '>' GEQ         //  
 %left '+' '-'                 // 
-%left '*' '/'                 // 
+%left '*' '/' MOD                 // 
 %left UNARY_SIGN              // maxima preferencia
 
 %%                            // Seccion 3 Gramatica - Semantico
@@ -133,7 +133,7 @@ else:    /* lambda */  { $$.code = ""; }
                                 $$.code = gen_code(temp);}
         ;
 
-sentencia:    SETF IDENTIF expresion                         { char aux[1026] = "";
+sentencia:    SETF IDENTIF expresion                         { char aux[2048] = "";
                                                                 if (strcmp(nombre_funcion, "")) {
                                                                     if (search_local(var_local, $2.code)) {;}
                                                                     if (search_local(argumentos, $2.code)) {sprintf(aux, "arg_%s_", nombre_funcion);}}
@@ -160,7 +160,7 @@ prin1_arg:    expresion                      {sprintf(temp, "%s .", $1.code);
 
 expresion:    NUMBER   { sprintf (temp, "%d", $1.value) ;
                             $$.code = gen_code(temp); }
-            | IDENTIF   { char aux[1026] = "";
+            | IDENTIF   { char aux[2048] = "";
                         if (strcmp(nombre_funcion, "")) {
                             if (search_local(var_local, $1.code)) {;}
                             else if (search_local(argumentos, $1.code)) {sprintf(aux, "arg_%s_", nombre_funcion);}}
@@ -179,6 +179,8 @@ operacion:    '+' expresion expresion { sprintf(temp, "%s %s +", $2.code, $3.cod
             | '*' expresion expresion { sprintf(temp, "%s %s *", $2.code, $3.code);
                                         $$.code = gen_code(temp); }
             | '/' expresion expresion { sprintf(temp, "%s %s /", $2.code, $3.code);
+                                        $$.code = gen_code(temp); }
+            | MOD expresion expresion { sprintf(temp, "%s %s mod", $2.code, $3.code);
                                         $$.code = gen_code(temp); }
             | '<' expresion expresion { sprintf(temp, "%s %s <", $2.code, $3.code);
                                         $$.code = gen_code(temp); }
@@ -307,6 +309,7 @@ typedef struct s_keyword { // para las palabras reservadas de C
 t_keyword keywords [] = { // define las palabras reservadas y los
     // "main",        MAIN,           // y los token asociados
     "print",       PRINT,
+    "mod",         MOD,
     "and",         AND,
     "or",          OR,
     "/=",          NOTEQ,
