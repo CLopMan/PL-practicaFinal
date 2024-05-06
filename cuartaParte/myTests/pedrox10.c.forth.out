@@ -1,0 +1,12 @@
+variable main_i
+: main
+0 main_i !
+
+0 main_i !
+BEGIN main_i @ 10 < WHILE ." pedro pedro pedro pedro pedro"
+main_i @ 1 + main_i !
+ REPEAT
+." >> I: "
+main_i @ .
+;
+main
