@@ -105,10 +105,10 @@ bloque:     sentencia    { $$ = $1 ; }
                                                                                                 char asign_local[2048];
                                                                                                 strcpy(asign_local, "");
                                                                                                 for (i = 0; i < var_local.i ; ++i) {
-                                                                                                    sprintf(asign_local, "%s%s !\n", asign_local, var_local.lista[i]);
+                                                                                                    sprintf(asign_local, "%s%i %s !\n", asign_local, var_local.values[i], var_local.lista[i]);
                                                                                                 } // asignacion de argumentos
 
-                                                                                                sprintf(temp, "%s%s: %s%s%s%s;", $5.code, variables_locales, $2.code, asign_args, asign_local, $7.code); 
+                                                                                                sprintf(temp, "%s%s: %s\n%s%s%s;", $5.code, variables_locales, $2.code, asign_args, asign_local, $7.code); 
                                                                                                 $$.code = gen_code(temp); strcpy(nombre_funcion, "");
                                                                                                 remove_all(&argumentos);
                                                                                                 remove_all(&var_local);
@@ -305,7 +305,7 @@ typedef struct s_keyword { // para las palabras reservadas de C
 } t_keyword ;
 
 t_keyword keywords [] = { // define las palabras reservadas y los
-    "main",        MAIN,           // y los token asociados
+    // "main",        MAIN,           // y los token asociados
     "print",       PRINT,
     "and",         AND,
     "or",          OR,
