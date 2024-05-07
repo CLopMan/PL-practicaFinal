@@ -149,6 +149,7 @@ sentencia:    SETF IDENTIF expresion                         { char aux[2048] = 
                                                                 sprintf(temp, "%s\n exit", $5.code);
                                                                 $$.code = gen_code(temp);
                                                             }
+            | funcion { $$ = $1; }
             ;
 
         
@@ -171,6 +172,14 @@ expresion:    NUMBER   { sprintf (temp, "%d", $1.value) ;
             | '(' NOT expresion ')' {sprintf(temp, "%s 0=", $3.code);
                                     $$.code = gen_code(temp);}
             ;
+
+funcion: IDENTIF args  { sprintf(temp, "%s %s", $2.code, $1.code); 
+                        $$.code = gen_code(temp);} // args identif
+        ;
+
+args: /* lambda */ { $$.code = ""; }
+    | expresion args { sprintf(temp, "%s %s", $1.code, $2.code) ;
+                        $$.code = gen_code(temp); }
 
 operacion:    '+' expresion expresion { sprintf(temp, "%s %s +", $2.code, $3.code); 
                                         $$.code = gen_code(temp); }
@@ -200,6 +209,7 @@ operacion:    '+' expresion expresion { sprintf(temp, "%s %s +", $2.code, $3.cod
                                         $$.code = gen_code(temp);}
             | expresion                 {sprintf(temp, "%s", $1.code);
                                         $$.code = gen_code(temp);} // para poder reconocer expresion como (1)
+            | funcion                 { $$ = $1 ; }
             ;
 
 declaracion:    SETQ IDENTIF NUMBER                                     {

@@ -10,3 +10,4 @@ main () {
     printf("%s", out);
     return 0;
 }
+//@ (main)
