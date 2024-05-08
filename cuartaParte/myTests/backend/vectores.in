@@ -7,3 +7,4 @@
 (prin1 (aref vec1 2)) 
 (prin1 vec1) 
 )
+ (main)

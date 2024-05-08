@@ -10,4 +10,4 @@ main()
     printf("Vector completo", vec1);
 }
 
-// @(main)
+//@ (main)

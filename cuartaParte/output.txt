@@ -1,1 +1,15 @@
-
+variable a
+1 a !
+variable b
+2 b !
+: main
+." Hola Mundo"
+a @ .
+b @ .
+." Hola"
+a @ .
+." mundo"
+1 1 + .
+." Adios Mundo"
+;
+main

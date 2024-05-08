@@ -5,3 +5,4 @@
 (prin1 "Hola") (prin1 a) (prin1 "mundo") (prin1 (+ 1 1)) 
 (print "Adios Mundo")
 )
+ (main)
