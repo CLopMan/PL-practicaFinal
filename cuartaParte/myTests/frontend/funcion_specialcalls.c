@@ -20,6 +20,8 @@ main() {
     puts("DIVISION    -");
     result = division(suma(a, b), 5); // a b suma b a division division
     printf("s", "a = ", a, " b = ", b, " result = ", result);
+    result = division(a + b, 5*result); // a b suma b a division division
+    printf("s", "a = ", a, " b = ", b, " result = ", result);
     return 0;
 }
 //@ (main)

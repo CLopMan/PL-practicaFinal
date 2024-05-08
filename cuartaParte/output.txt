@@ -1,15 +1,20 @@
 variable a
-1 a !
-variable b
-2 b !
+0 a !
+variable arg_cuadrado_n
+: cuadrado
+arg_cuadrado_n !
+arg_cuadrado_n @ arg_cuadrado_n @ *
+ exit
+;
+variable main_b
 : main
-." Hola Mundo"
+0 main_b !
+
+2 3 +  cuadrado a !
+a @ 2  cuadrado + main_b !
 a @ .
-b @ .
-." Hola"
-a @ .
-." mundo"
-1 1 + .
-." Adios Mundo"
+main_b @ .
+0
+ exit
 ;
 main
