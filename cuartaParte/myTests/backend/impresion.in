@@ -1,0 +1,7 @@
+(setq a 1) (setq b 2)  
+(defun main () 
+(print "Hola Mundo")
+(prin1 a) (prin1 b) 
+(prin1 "Hola") (prin1 a) (prin1 "mundo") (prin1 (+ 1 1)) 
+(print "Adios Mundo")
+)

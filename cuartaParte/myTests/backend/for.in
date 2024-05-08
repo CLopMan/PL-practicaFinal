@@ -1,0 +1,17 @@
+(setq b 1)  
+(defun main () 
+(setq main_abc 1)  
+(setq main_i 0)  
+(setq main_c 0)  
+(setf main_i 0)(loop while (< main_i 10) do
+(prin1 main_i) 
+(setf main_c (+ b main_abc))
+(setf main_abc (+ main_i b))
+(setf main_i(+ 1 main_i))) 
+(setf main_i 10)(loop while (> main_i 0) do
+(prin1 main_i) 
+(setf main_c (+ b main_abc))
+(setf main_abc (+ main_i b))
+(setf main_i(- 1 main_i))) 
+)
+ (main)
