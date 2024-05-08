@@ -141,8 +141,6 @@ sentencia:    SETF IDENTIF expresion                         { char aux[2048] = 
                                                                     $$.code = gen_code (temp) ; }
             | PRINT STRING                                   {sprintf(temp, ".\" %s\"", $2.code); 
                                                                     $$.code = gen_code(temp); }
-            | IDENTIF                                        {sprintf(temp, "%s", $1.code);
-                                                                    $$.code = gen_code(temp);}
             | PRIN1 prin1_arg                                {sprintf(temp, "%s", $2.code); 
                                                                     $$.code = gen_code(temp); }
             | RETURN '-' FROM IDENTIF expresion             {
@@ -170,6 +168,10 @@ expresion:    NUMBER   { sprintf (temp, "%d", $1.value) ;
             | '(' operacion ')' {sprintf(temp, "%s", $2.code); 
                                 $$.code = gen_code(temp); }
             | '(' NOT expresion ')' {sprintf(temp, "%s 0=", $3.code);
+                                    $$.code = gen_code(temp);}
+            | '(' '+' expresion ')' {sprintf(temp, "%s", $3.code);
+                                    $$.code = gen_code(temp);}
+            | '(' '-' expresion ')' {sprintf(temp, "0 %s -", $3.code);
                                     $$.code = gen_code(temp);}
             ;
 
@@ -207,8 +209,6 @@ operacion:    '+' expresion expresion { sprintf(temp, "%s %s +", $2.code, $3.cod
                                         $$.code = gen_code(temp);}
             | NOTEQ expresion expresion { sprintf(temp, "%s %s = 0=", $2.code, $3.code); 
                                         $$.code = gen_code(temp);}
-            | expresion                 {sprintf(temp, "%s", $1.code);
-                                        $$.code = gen_code(temp);} // para poder reconocer expresion como (1)
             | funcion                 { $$ = $1 ; }
             ;
 

@@ -7,7 +7,7 @@ fib (int n) {
     int i = 0;
     int c;
     b = 1; 
-    //@ (print abc);
+    //@ (prin1 abc)
     for (i = 0; i < n; i = 1 + i) {
         c = b + abc;
         abc = b; 
@@ -17,10 +17,10 @@ fib (int n) {
 }
 
 main() {
-    int v[32];
-    int paco = 1;
+    //int v[32];
+    int control = 1;
     
-    v[31] = fib(10);
+    //v[31] = fib(10);
 
     if (3 > 1) {
         puts("TRUE");
@@ -32,12 +32,12 @@ main() {
         puts("FALSE");
     }
     
-    while (paco < 10) {
-        paco = paco * 2;
+    while (control < 10) {
+        control = control * 2;
     }
-    puts("FINNNNN");
+    puts("FIN");
     puts("---");
-    printf("HOLA", v[31]);
+    //printf("HOLA", v[31]);
     if (! (1 < 0)) {
         b = 1;
     } else {
@@ -47,4 +47,4 @@ main() {
 
 
 }
-//@ (main);
+//@ (main)
