@@ -1,35 +1,44 @@
-variable suma
-0 suma !
-variable resta
-0 resta !
-variable mult
-0 mult !
-variable div
-0 div !
-variable modulo
-0 modulo !
-variable unario
-0 unario !
-variable combo
-0 combo !
-variable main_op1
-variable main_op2
+variable arg_suma_a
+variable arg_suma_b
+: suma
+arg_suma_b !
+arg_suma_a !
+arg_suma_a @ arg_suma_b @ +
+ exit
+;variable arg_division_a
+variable arg_division_b
+variable division_resto
+: division
+arg_division_b !
+arg_division_a !
+0 division_resto !
+
+arg_division_b @ 0 = IF ." division entre 0"
+1
+ exit
+  THEN
+arg_division_a @ arg_division_b @ mod division_resto !
+." resto: "
+division_resto @ .
+arg_division_a @ arg_division_b @ /
+ exit
+;variable main_r_suma
+variable main_r_div1
+variable main_r_div2
 : main
-6 main_op1 !
-3 main_op2 !
+0 main_r_suma !
+0 main_r_div1 !
+0 main_r_div2 !
 
 
-main_op1 @ main_op2 @ + suma !
-main_op1 @ main_op2 @ - resta !
-main_op1 @ main_op2 @ * mult !
-main_op1 @ main_op2 @ / div !
-main_op1 @ main_op2 @ mod modulo !
-0 main_op1 @ - unario !
-main_op1 @ main_op2 @ main_op1 @ * + main_op2 @ main_op2 @ + - main_op1 @ 3 * + combo !
-suma @ .
-resta @ .
-mult @ .
-div @ .
-modulo @ .
-;
- main
+
+1 0 2 -  suma main_r_suma !
+1 0  division main_r_div1 !
+4 2  division main_r_div2 !
+main_r_suma @ .
+main_r_div1 @ .
+main_r_div2 @ .
+0
+ exit
+; main
+
