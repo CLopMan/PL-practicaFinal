@@ -17,15 +17,14 @@ fib (int n) {
 }
 
 main() {
-    //int v[32];
+    // int v[32];
     int control = 1;
     
-    //v[31] = fib(10);
-
+    // v[31] = fib(10);
     if (3 > 1) {
         puts("TRUE");
     } 
-
+    // Comentario
     if (! (1 < 0)) {
         b = 1;
     } else {
@@ -37,7 +36,7 @@ main() {
     }
     puts("FIN");
     puts("---");
-    //printf("HOLA", v[31]);
+    // printf("HOLA", v[31]);
     if (! (1 < 0)) {
         b = 1;
     } else {
