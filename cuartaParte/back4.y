@@ -77,7 +77,7 @@ typedef struct s_attr {
 
 %%                            // Seccion 3 Gramatica - Semantico
 
-axioma:     '(' bloque ')' codigo   { printf ("%s\n%s", $2.code,$4.code); } 
+axioma:     '(' bloque ')' codigo   { printf ("\n"); } 
             ;
 
 codigo:     '(' bloque ')' codigo   { sprintf(temp, "%s\n%s", $2.code, $4.code); $$.code = gen_code(temp); }
@@ -109,8 +109,9 @@ bloque:     sentencia               { $$ = $1 ; }
                                           sprintf(asign_local, "%s%i %s !\n", asign_local, var_local.values[i], var_local.lista[i]);
                                       } // asignacion de var locales
  
-                                      sprintf(temp, "%s%s: %s\n%s%s%s;", $5.code, variables_locales, $2.code, asign_args, asign_local, $7.code); 
-                                      $$.code = gen_code(temp); strcpy(nombre_funcion, "");
+                                      printf("%s%s: %s\n%s%s%s;\n", $5.code, variables_locales, $2.code, asign_args, asign_local, $7.code); 
+                                      $$.code = gen_code(""); 
+                                      strcpy(nombre_funcion, "");
                                       remove_all(&argumentos);
                                       remove_all(&var_local);
                                      }
@@ -156,7 +157,6 @@ sentencia:    SETF IDENTIF expresion  {
                                         $$.code = gen_code (temp) ; 
                                       }
             | PRINT STRING            { sprintf(temp, ".\" %s\"", $2.code); $$.code = gen_code(temp); }
-            | IDENTIF                 { sprintf(temp, "%s", $1.code); $$.code = gen_code(temp); }
             | PRIN1 prin1_arg         { sprintf(temp, "%s", $2.code); $$.code = gen_code(temp); }
             | RETURN '-' FROM 
                 IDENTIF expresion     { sprintf(temp, "%s\n exit", $5.code); $$.code = gen_code(temp); }
@@ -211,7 +211,7 @@ declaracion:    SETQ IDENTIF NUMBER   {
                                             insert(&var_local, $2.code, $3.value);
                                             $$.code = gen_code ("");
                                         } else {
-                                            sprintf (temp, "variable %s\n%d %s !", $2.code, $3.value, $2.code) ; 
+                                            printf ( "variable %s\n%d %s !", $2.code, $3.value, $2.code) ; 
                                             $$.code = gen_code (temp) ; 
                                         }
                                       }
