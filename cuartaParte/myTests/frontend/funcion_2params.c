@@ -24,3 +24,4 @@ main () {
     printf("f", r_suma, r_div1, r_div2);
     return 0;
 }
+//@//@main
