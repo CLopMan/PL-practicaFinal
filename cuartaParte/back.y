@@ -121,14 +121,14 @@ bloque:     sentencia               { $$ = $1 ; }
                 expresion 
                 DO 
                 codigo              { 
-                                     sprintf(temp, "BEGIN %s WHILE %s REPEAT", $3.code, $5.code); 
+                                     sprintf(temp, "BEGIN\n %s WHILE\n %s REPEAT\n", $3.code, $5.code); 
                                      $$.code = gen_code(temp);
                                     } 
             | IF 
                 expresion 
                 '(' PROGN codigo')' 
                 else                { 
-                                     sprintf(temp, "%s IF %s %s THEN", $2.code, $5.code, $7.code); 
+                                     sprintf(temp, "%s IF\n %s %s THEN\n", $2.code, $5.code, $7.code); 
                                      $$.code = gen_code(temp);
                                     }
 
@@ -153,14 +153,22 @@ sentencia:    SETF IDENTIF expresion  {
                                             else if (search_local(argumentos, $2.code)) 
                                                 {sprintf(aux, "arg_%s_", nombre_funcion);}
                                         }
-                                        sprintf (temp, "%s %s%s !", $3.code, aux,$2.code) ; 
+                                        sprintf (temp, "%s %s%s !\n", $3.code, aux,$2.code) ; 
                                         $$.code = gen_code (temp) ; 
                                       }
             | PRINT STRING            { sprintf(temp, ".\" %s\"", $2.code); $$.code = gen_code(temp); }
             | PRIN1 prin1_arg         { sprintf(temp, "%s", $2.code); $$.code = gen_code(temp); }
             | RETURN '-' FROM 
                 IDENTIF expresion     { sprintf(temp, "%s\n exit", $5.code); $$.code = gen_code(temp); }
-            | funcion                 { $$ = $1; }
+            | funcion                 { 
+                                        // si estoy en el scope de una funcion
+                                        if (strcmp(nombre_funcion, "")) {
+                                            $$ = $1;
+                                        } else {
+                                            // caso @ (funcion)
+                                            printf("%s\n", $1.code);
+                                        }
+                                      }
             ;
 
         
@@ -183,7 +191,15 @@ expresion:    NUMBER                  { sprintf (temp, "%d", $1.value) ;$$.code 
             | '(' '-' expresion ')'         { sprintf(temp, "0 %s -", $3.code); $$.code = gen_code(temp); }
             ;
 
-funcion:    IDENTIF args                    { sprintf(temp, "%s %s", $2.code, $1.code); $$.code = gen_code(temp); }
+funcion:    IDENTIF args                    {
+                                             if (strcmp(nombre_funcion, $1.code) == 0) {
+                                                sprintf(temp, "%s %s", $2.code, "RECURSE");
+                                             } else {
+                                                sprintf(temp, "%s %s", $2.code, $1.code); $$.code = gen_code(temp); 
+                                             }
+                                             $$.code = gen_code(temp);
+                                             fprintf(stderr, "%s - %s\n", nombre_funcion, $1.code);
+                                            }
             ;
 
 args:   /* lambda */                        { $$.code = ""; }
@@ -211,7 +227,7 @@ declaracion:    SETQ IDENTIF NUMBER   {
                                             insert(&var_local, $2.code, $3.value);
                                             $$.code = gen_code ("");
                                         } else {
-                                            printf ( "variable %s\n%d %s !", $2.code, $3.value, $2.code) ; 
+                                            printf ( "variable %s\n%d %s !\n", $2.code, $3.value, $2.code) ; 
                                             $$.code = gen_code (temp) ; 
                                         }
                                       }
