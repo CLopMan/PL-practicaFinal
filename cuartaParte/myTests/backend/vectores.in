@@ -4,6 +4,7 @@
 (defun main () 
 (setf (aref vec1 2) 3)
 (setf var (+ (aref vec1 2) 3))
+(setf (aref vec2 1) var)
 (setf (aref vec3 var) (+ (aref vec1 2) (aref vec2 1)))
 (prin1 (aref vec1 2)) 
 (prin1 vec1) 

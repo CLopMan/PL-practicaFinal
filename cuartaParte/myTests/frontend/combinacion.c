@@ -1,6 +1,6 @@
 int abc  = 1;
 int b = 0;
-int n = 0;
+int a = 0;
 
 fib (int n) {
     int abc = 1;
@@ -8,7 +8,9 @@ fib (int n) {
     int c;
     int v[40];
     b = 1; 
-    v[31] = fib(10);
+    if (n < 5) {
+        v[31] = fib(10);
+    }
     //@ (prin1 abc)
     for (i = 0; i < n; i = 1 + i) {
         c = b + abc;
@@ -39,6 +41,7 @@ main() {
 
     if (! (1 < 0)) {
         b = 1;
+        a = fib(2);
     } else {
         puts("FALSE");
     }
