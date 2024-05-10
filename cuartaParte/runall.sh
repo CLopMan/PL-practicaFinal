@@ -5,3 +5,9 @@ do
         ./run.sh tests/$i/$x
     done
 done
+
+
+for i in `ls myTests/frontend`
+do
+    ./run.sh myTests/frontend/$i
+done
