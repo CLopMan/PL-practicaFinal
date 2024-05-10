@@ -17,5 +17,5 @@ printf "\033[1;33mprimera fase: traduccion a código intermedio:\033[0m\n"
 printf "\033[1;33msegunda fase: traduccion a gforth:\033[0m\n"
 ./back < $1.lisp.out > $1.forth.out
 printf "\033[1;33mtercera fase: ejecucion:\033[0m\n"
-./gforth < $1.forth.out
+./gforth < $1.forth.out > $1.output.out
     

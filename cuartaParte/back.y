@@ -201,11 +201,14 @@ expresion:    NUMBER                  { sprintf (temp, "%d", $1.value) ;$$.code 
                                         char aux[2048] = "";
                                         if (strcmp(nombre_funcion, "")) {
                                             if (search_local(var_local, $1.code)) {;}
-                                            else if (search_local(argumentos, $1.code)) {sprintf(aux, "arg_%s_", nombre_funcion);}}
-                                            sprintf (temp, "%s%s @", aux,$1.code) ; 
+                                            else if (search_local(argumentos, $1.code)) {
+                                                sprintf(aux, "arg_%s_", nombre_funcion);
+                                            }
+                                        }
+                                        sprintf (temp, "%s%s @", aux,$1.code) ; 
                                         $$.code = gen_code(temp);
                                       }
-            |  vector                   {sprintf(temp, "%s @", $1.code); $$.code = gen_code(temp);}
+            |  vector                       {sprintf(temp, "%s @", $1.code); $$.code = gen_code(temp);}
             | '(' operacion ')'             { sprintf(temp, "%s", $2.code); $$.code = gen_code(temp); }
             | '(' NOT expresion ')'         { sprintf(temp, "%s 0=", $3.code); $$.code = gen_code(temp); }
             | '(' '+' expresion ')'         { sprintf(temp, "%s", $3.code);$$.code = gen_code(temp); }
@@ -214,10 +217,8 @@ expresion:    NUMBER                  { sprintf (temp, "%d", $1.value) ;$$.code 
 
 vector: '(' AREF IDENTIF expresion ')'    { 
                                                 char aux[2048] = "";
-                                                if (strcmp(nombre_funcion, "")) {
-                                                    if (search_local(vec_local, $3.code)) {;}
-                                                    else if (search_local(argumentos, $3.code)) {sprintf(aux, "arg_%s_", nombre_funcion);}}
-                                                    sprintf (temp, "%s%s %s cells +", aux, $3.code, $4.code) ; 
+                                            
+                                                sprintf (temp, "%s%s %s cells +", aux, $3.code, $4.code); 
                                                 $$.code = gen_code(temp);
                                             }
 
@@ -261,15 +262,19 @@ declaracion:    SETQ IDENTIF NUMBER   {
                                             $$.code = gen_code (temp) ; 
                                         }
                                       }
-                | SETQ IDENTIF '('MAKE'-'ARRAY NUMBER')' {
-                                                    if (strcmp(nombre_funcion, "")) { 
-                                                        insert(&vec_local, $2.code, $7.value);
-                                                        $$.code = gen_code ("");
-                                                    } else {
-                                                        printf ( "variable %s %d cells allot\n", $2.code, $7.value) ; 
-                                                    $$.code = gen_code (temp) ; 
-                                                    }  
-                                                }
+                | SETQ IDENTIF 
+                    '('
+                    MAKE'-'ARRAY 
+                    NUMBER
+                    ')'               {
+                                        if (strcmp(nombre_funcion, "")) { 
+                                            insert(&vec_local, $2.code, $7.value);
+                                            $$.code = gen_code ("");
+                                        } else {
+                                            printf ( "variable %s %d cells allot\n", $2.code, $7.value); 
+                                            $$.code = gen_code (temp); 
+                                        }  
+                                      }
                 ;
 
 
