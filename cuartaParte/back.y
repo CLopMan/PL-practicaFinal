@@ -33,6 +33,7 @@ char nombre_funcion[1024];
 
 t_lista argumentos; 
 t_lista var_local;
+t_lista vec_local;
 
 // Definitions for explicit attributes
 
@@ -64,6 +65,9 @@ typedef struct s_attr {
 %token NOT
 %token RETURN
 %token FROM
+%token MAKE
+%token ARRAY
+%token AREF
 
 
 %right '='                    // minima preferencia
@@ -102,6 +106,12 @@ bloque:     sentencia               { $$ = $1 ; }
                                       for (i = 0; i < var_local.i ; ++i) {
                                           sprintf(variables_locales, "%svariable %s\n",variables_locales, var_local.lista[i]);
                                       } // declaracion de var_locales
+
+                                      char vec_locales[2048];
+                                      strcpy(vec_locales, "");
+                                      for (i = 0; i < vec_local.i ; ++i) {
+                                          sprintf(vec_locales, "%svariable %s %d cells allot\n",vec_locales, vec_local.lista[i], var_local.values[i]);
+                                      } // declaracion de vec_locales
  
                                       char asign_local[2048];
                                       strcpy(asign_local, "");
@@ -109,7 +119,7 @@ bloque:     sentencia               { $$ = $1 ; }
                                           sprintf(asign_local, "%s%i %s !\n", asign_local, var_local.values[i], var_local.lista[i]);
                                       } // asignacion de var locales
  
-                                      printf("%s%s: %s\n%s%s%s;\n", $5.code, variables_locales, $2.code, asign_args, asign_local, $7.code); 
+                                      printf("%s%s%s: %s\n%s%s%s;\n", $5.code, variables_locales,vec_locales, $2.code, asign_args, asign_local, $7.code); 
                                       $$.code = gen_code(""); 
                                       strcpy(nombre_funcion, "");
                                       remove_all(&argumentos);
@@ -156,6 +166,16 @@ sentencia:    SETF IDENTIF expresion  {
                                         sprintf (temp, "%s %s%s !\n", $3.code, aux,$2.code) ; 
                                         $$.code = gen_code (temp) ; 
                                       }
+            |  SETF vector expresion  {
+                                        char aux[2048] = "";
+                                        if (strcmp(nombre_funcion, "")) {
+                                            if (search_local(vec_local, $2.code)) {;}
+                                            else if (search_local(argumentos, $2.code)) 
+                                                {sprintf(aux, "arg_%s_", nombre_funcion);}
+                                        }
+                                        sprintf (temp, "%s %s%s !\n", $3.code, aux,$2.code) ; 
+                                        $$.code = gen_code (temp) ; 
+                                      }
             | PRINT STRING            { sprintf(temp, ".\" %s\"", $2.code); $$.code = gen_code(temp); }
             | PRIN1 prin1_arg         { sprintf(temp, "%s", $2.code); $$.code = gen_code(temp); }
             | RETURN '-' FROM 
@@ -185,11 +205,21 @@ expresion:    NUMBER                  { sprintf (temp, "%d", $1.value) ;$$.code 
                                             sprintf (temp, "%s%s @", aux,$1.code) ; 
                                         $$.code = gen_code(temp);
                                       }
+            |  vector                   {sprintf(temp, "%s @", $1.code); $$.code = gen_code(temp);}
             | '(' operacion ')'             { sprintf(temp, "%s", $2.code); $$.code = gen_code(temp); }
             | '(' NOT expresion ')'         { sprintf(temp, "%s 0=", $3.code); $$.code = gen_code(temp); }
             | '(' '+' expresion ')'         { sprintf(temp, "%s", $3.code);$$.code = gen_code(temp); }
             | '(' '-' expresion ')'         { sprintf(temp, "0 %s -", $3.code); $$.code = gen_code(temp); }
             ;
+
+vector: '(' AREF IDENTIF expresion ')'    { 
+                                                char aux[2048] = "";
+                                                if (strcmp(nombre_funcion, "")) {
+                                                    if (search_local(vec_local, $3.code)) {;}
+                                                    else if (search_local(argumentos, $3.code)) {sprintf(aux, "arg_%s_", nombre_funcion);}}
+                                                    sprintf (temp, "%s%s %s cells +", aux, $3.code, $4.code) ; 
+                                                $$.code = gen_code(temp);
+                                            }
 
 funcion:    IDENTIF args                    {
                                              if (strcmp(nombre_funcion, $1.code) == 0) {
@@ -231,10 +261,17 @@ declaracion:    SETQ IDENTIF NUMBER   {
                                             $$.code = gen_code (temp) ; 
                                         }
                                       }
+                | SETQ IDENTIF '('MAKE'-'ARRAY NUMBER')' {
+                                                    if (strcmp(nombre_funcion, "")) { 
+                                                        insert(&vec_local, $2.code, $7.value);
+                                                        $$.code = gen_code ("");
+                                                    } else {
+                                                        printf ( "variable %s %d cells allot\n", $2.code, $7.value) ; 
+                                                    $$.code = gen_code (temp) ; 
+                                                    }  
+                                                }
                 ;
 
-/*vector: SETQ IDENTIF '(' MAKE-ARRAY NUMBER')' {sprintf (temp, "variable %s\n%d %s !", $2.code, $3.value, $2.code) ; 
-                                                                           $$.code = gen_code (temp) ; }*/
 
 %%                            // SECCION 4    Codigo en C
 
@@ -347,6 +384,9 @@ t_keyword keywords [] = { // define las palabras reservadas y los
     "progn",       PROGN,
     "return",      RETURN,
     "from",        FROM,
+    "make",        MAKE,
+    "array",       ARRAY,
+    "aref",        AREF,
     NULL,          0               // para marcar el fin de la tabla
 } ;
 

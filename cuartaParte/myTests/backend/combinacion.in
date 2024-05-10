@@ -6,7 +6,9 @@
 (setq fib_abc 1)  
 (setq fib_i 0)  
 (setq fib_c 0)  
+(setq fib_v (make-array 40))  
 (setf b 1)
+(setf (aref fib_v 31) (fib 10 ))
 (setf fib_i 0)(loop while (< fib_i n) do
 (setf fib_c (+ b fib_abc))
 (setf fib_abc b)

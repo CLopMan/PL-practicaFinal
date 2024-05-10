@@ -1,44 +1,75 @@
-variable arg_suma_a
-variable arg_suma_b
-: suma
-arg_suma_b !
-arg_suma_a !
-arg_suma_a @ arg_suma_b @ +
- exit
-;variable arg_division_a
-variable arg_division_b
-variable division_resto
-: division
-arg_division_b !
-arg_division_a !
-0 division_resto !
+variable abc
+1 abc !
+variable b
+0 b !
+variable n
+0 n !
+variable arg_fib_n
+variable fib_abc
+variable fib_i
+variable fib_c
+variable fib_v 1 cells allot
+: fib
+arg_fib_n !
+1 fib_abc !
+0 fib_i !
+0 fib_c !
 
-arg_division_b @ 0 = IF ." division entre 0"
-1
+
+
+
+1 b !
+
+10  RECURSE fib_v 31 cells + !
+
+0 fib_i !
+
+BEGIN
+ fib_i @ arg_fib_n @ < WHILE
+ b @ fib_abc @ + fib_c !
+
+b @ fib_abc !
+
+fib_c @ b !
+
+1 fib_i @ + fib_i !
+
+ REPEAT
+
+fib_c @
  exit
-  THEN
-arg_division_a @ arg_division_b @ mod division_resto !
-." resto: "
-division_resto @ .
-arg_division_a @ arg_division_b @ /
- exit
-;variable main_r_suma
-variable main_r_div1
-variable main_r_div2
+;
+variable main_control
+variable fib_v 1 cells allot
 : main
-0 main_r_suma !
-0 main_r_div1 !
-0 main_r_div2 !
+1 main_control !
 
+3 1 > IF
+ ." TRUE"
+  THEN
 
+1 0 < 0= IF
+ 1 b !
 
-1 0 2 -  suma main_r_suma !
-1 0  division main_r_div1 !
-4 2  division main_r_div2 !
-main_r_suma @ .
-main_r_div1 @ .
-main_r_div2 @ .
+ ELSE ." FALSE"
+ THEN
+
+BEGIN
+ main_control @ 10 < WHILE
+ main_control @ 2 * main_control !
+
+ REPEAT
+
+." FIN"
+." ---"
+1 0 < 0= IF
+ 1 b !
+
+ ELSE ." FALSE"
+ THEN
+
 0
  exit
-; main
+;
+ main
 

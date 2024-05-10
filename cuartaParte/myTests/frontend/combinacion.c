@@ -6,7 +6,9 @@ fib (int n) {
     int abc = 1;
     int i = 0;
     int c;
+    int v[40];
     b = 1; 
+    v[31] = fib(10);
     //@ (prin1 abc)
     for (i = 0; i < n; i = 1 + i) {
         c = b + abc;
@@ -17,10 +19,8 @@ fib (int n) {
 }
 
 main() {
-    // int v[32];
     int control = 1;
     
-    // v[31] = fib(10);
     if (3 > 1) {
         puts("TRUE");
     } 
@@ -36,7 +36,7 @@ main() {
     }
     puts("FIN");
     puts("---");
-    // printf("HOLA", v[31]);
+
     if (! (1 < 0)) {
         b = 1;
     } else {
