@@ -28,7 +28,7 @@ int search_local(t_lista l, char *var);
 int insert(t_lista *l, char *var, int n);
 int remove_all(t_lista *l);
 
-char temp [2048] ;
+char temp [2*2048] ;
 char nombre_funcion[1024];
 
 t_lista argumentos; 
@@ -94,29 +94,35 @@ bloque:     sentencia               { $$ = $1 ; }
                 IDENTIF             { strcpy(nombre_funcion, $2.code); } 
                 '(' func_arg ')' 
                 codigo              {
-                                      char asign_args[2048];
+                                      char asign_args[4*2048];
+                                      char asign_aux[2*2048];
                                       strcpy(asign_args, "");
                                       int i; 
                                       for (i = 0; i < argumentos.i ; ++i) {
-                                         sprintf(asign_args, "%sarg_%s_%s !\n", asign_args,nombre_funcion, argumentos.lista[i]);
+                                         sprintf(asign_aux, "arg_%s_%s !\n",nombre_funcion, argumentos.lista[i]);
+                                         strcat(asign_args, asign_aux);
+                                         
                                       } // asignacion de argumentos
  
-                                      char variables_locales[2048];
+                                      char variables_locales[4*2048];
                                       strcpy(variables_locales, "");
                                       for (i = 0; i < var_local.i ; ++i) {
-                                          sprintf(variables_locales, "%svariable %s\n",variables_locales, var_local.lista[i]);
+                                          sprintf(asign_aux, "variable %s\n", var_local.lista[i]);
+                                          strcat(variables_locales, asign_aux);
                                       } // declaracion de var_locales
 
-                                      char vec_locales[2048];
+                                      char vec_locales[4*2048];
                                       strcpy(vec_locales, "");
                                       for (i = 0; i < vec_local.i ; ++i) {
-                                          sprintf(vec_locales, "%svariable %s %d cells allot\n",vec_locales, vec_local.lista[i], var_local.values[i]);
+                                          sprintf(asign_aux, "variable %s %d cells allot\n", vec_local.lista[i], var_local.values[i]);
+                                          strcat(vec_locales, asign_aux);
                                       } // declaracion de vec_locales
  
                                       char asign_local[2048];
                                       strcpy(asign_local, "");
                                       for (i = 0; i < var_local.i ; ++i) {
-                                          sprintf(asign_local, "%s%i %s !\n", asign_local, var_local.values[i], var_local.lista[i]);
+                                          sprintf(asign_aux, "%i %s !\n", var_local.values[i], var_local.lista[i]);
+                                          strcat(asign_local, asign_aux);
                                       } // asignacion de var locales
  
                                       printf("%s%s%s: %s\n%s%s%s;\n", $5.code, variables_locales,vec_locales, $2.code, asign_args, asign_local, $7.code); 
@@ -124,6 +130,7 @@ bloque:     sentencia               { $$ = $1 ; }
                                       strcpy(nombre_funcion, "");
                                       remove_all(&argumentos);
                                       remove_all(&var_local);
+                                      remove_all(&vec_local);
                                      }
 
             | LOOP 
@@ -167,13 +174,8 @@ sentencia:    SETF IDENTIF expresion  {
                                         $$.code = gen_code (temp) ; 
                                       }
             |  SETF vector expresion  {
-                                        char aux[2048] = "";
-                                        if (strcmp(nombre_funcion, "")) {
-                                            if (search_local(vec_local, $2.code)) {;}
-                                            else if (search_local(argumentos, $2.code)) 
-                                                {sprintf(aux, "arg_%s_", nombre_funcion);}
-                                        }
-                                        sprintf (temp, "%s %s%s !\n", $3.code, aux,$2.code) ; 
+                                        
+                                        sprintf (temp, "%s %s !\n", $3.code,$2.code) ; 
                                         $$.code = gen_code (temp) ; 
                                       }
             | PRINT STRING            { sprintf(temp, ".\" %s\"", $2.code); $$.code = gen_code(temp); }
@@ -208,18 +210,16 @@ expresion:    NUMBER                  { sprintf (temp, "%d", $1.value) ;$$.code 
                                         sprintf (temp, "%s%s @", aux,$1.code) ; 
                                         $$.code = gen_code(temp);
                                       }
-            |  vector                       {sprintf(temp, "%s @", $1.code); $$.code = gen_code(temp);}
+            |  vector                       { sprintf(temp, "%s @", $1.code); $$.code = gen_code(temp); }
             | '(' operacion ')'             { sprintf(temp, "%s", $2.code); $$.code = gen_code(temp); }
             | '(' NOT expresion ')'         { sprintf(temp, "%s 0=", $3.code); $$.code = gen_code(temp); }
             | '(' '+' expresion ')'         { sprintf(temp, "%s", $3.code);$$.code = gen_code(temp); }
             | '(' '-' expresion ')'         { sprintf(temp, "0 %s -", $3.code); $$.code = gen_code(temp); }
             ;
 
-vector: '(' AREF IDENTIF expresion ')'    { 
-                                                char aux[2048] = "";
-                                            
-                                                sprintf (temp, "%s%s %s cells +", aux, $3.code, $4.code); 
-                                                $$.code = gen_code(temp);
+vector: '(' AREF IDENTIF expresion ')'      { 
+                                             sprintf (temp, "%s %s cells +", $3.code, $4.code); 
+                                             $$.code = gen_code(temp);
                                             }
 
 funcion:    IDENTIF args                    {
