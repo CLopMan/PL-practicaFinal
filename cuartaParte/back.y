@@ -195,10 +195,10 @@ funcion:    IDENTIF args                    {
                                              if (strcmp(nombre_funcion, $1.code) == 0) {
                                                 sprintf(temp, "%s %s", $2.code, "RECURSE");
                                              } else {
-                                                sprintf(temp, "%s %s", $2.code, $1.code); $$.code = gen_code(temp); 
+                                                sprintf(temp, "%s %s", $2.code, $1.code); 
+                                                $$.code = gen_code(temp); 
                                              }
                                              $$.code = gen_code(temp);
-                                             fprintf(stderr, "%s - %s\n", nombre_funcion, $1.code);
                                             }
             ;
 
