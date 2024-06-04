@@ -1,4 +1,4 @@
-/* César López Mantecón, Paula Subías Serrano, grupo 12 */
+/* Cesar Lopez Mantecon, Paula Subias Serrano, grupo 12 */
 /* 100472092@alumnos.uc3m.es 100472119@alumnos.uc3m.es */
 %{                          // SECCION 1 Declaraciones de C-Yacc
 
