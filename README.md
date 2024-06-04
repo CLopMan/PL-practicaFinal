@@ -1,7 +1,7 @@
 # PL-practicaFinal
 This project aims to create a program that translates a subset of the C programming language to Forth, with Lisp serving as an intermediate language. It also accepts some embed code using the structure `//@<lisp code>` or `//@//@<forth code>`.
 
-The project was developed during several weeks. You can check the final programm in the "final" folder. 
+The project was developed during several weeks. You can check the final program in the "final" folder. 
 
 Course: third (2023-2024)
 ## Requirements
