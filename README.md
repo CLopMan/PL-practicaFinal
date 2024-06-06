@@ -10,7 +10,7 @@ The project was developed using [bison](https://www.gnu.org/software/bison/) ver
 In addition, [CLisp](https://clisp.sourceforge.io/) and [Gforth](https://gforth.org/) were used as interpreters of Lisp and Forth language.
 
 ## How to use the program
-Althoug some bash scripts were included for running tests, the general use of this project is the following: 
+Although some bash scripts were included for running tests, the general use of this project is the following: 
 1. Compile the translator either using `make` or compiling through the following commands: 
 ```
 bison back.y
